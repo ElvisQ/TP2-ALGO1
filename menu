@@ -1,4 +1,4 @@
-import os
+import opciones
 
 MENU = '''Elija una de las siguientes opciones:
 1. Listar archivos de la carpeta actual.
@@ -11,44 +11,11 @@ MENU = '''Elija una de las siguientes opciones:
 8. Salir.
 '''
 
-def validar_opcion() -> int:
-#Pide el ingreso de una opcion y verifica que sea numerica.   
-    opcion = input()
-    while not opcion.isnumeric():
-        opcion = input("Entrada no valida. Debe ingresar un numero: ")
-    return int(opcion)
-    
-#def listar_archivos():
-
-def ejecutar_opcion(opcion: int, salida: bool) -> bool:
-#Recibe una opcion numerica y ejecuta una funcion segun lo elegido.
-    if opcion == 1:
-        listar_archivos()
-    elif opcion == 2:
-        crear_archivos()
-    elif opcion == 3:
-        subir_archivos()
-    elif opcion == 4:
-        descargar_archivos()
-    elif opcion == 5:
-        sincronizar()
-    elif opcion == 6:
-        generar_carpetas()
-    elif opcion == 7:
-        actualizar_entregas()
-    elif opcion == 8:
-        salida = True
-    else:
-        print("Esa opcion no existe. Reingrese opcion: ")
-        opcion = validar_opcion()
-        ejecutar_opcion(opcion,salida)
-    return salida
-    
 def main():
     salida = False
     while not salida:
         print(MENU)
-        opcion = validar_opcion()
-        salida = ejecutar_opcion(opcion,salida)
+        opcion = opciones.validar_opcion()
+        salida = opciones.ejecutar_opcion(opcion,salida)
 
 main()
