@@ -1,5 +1,7 @@
 import os
 from os.path import isfile, join
+from pydrive2 import files
+from pydrive2.drive import GoogleDrive
 
 ESPACIOS = '''Donde desea buscar?
 1. Archivos en carpeta local.
@@ -23,7 +25,8 @@ def listar_local() -> None:
 
 def listar_remoto():
 #Lista los archivos de la carpeta remota actual.
-    print("listar remoto")
+    #files.list()
+    print("En proceso")
 
 def ejecutar_listado(espacio: int) -> None:
 #Recibe una opcion numerica y ejecuta una funcion segun lo elegido.
