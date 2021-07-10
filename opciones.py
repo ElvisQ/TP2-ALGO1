@@ -1,6 +1,4 @@
 import listado, creacion, subida
-'''import creacion
-import subida'''
 
 def validar_opcion() -> int:
 #Pide el ingreso de una opcion y verifica que sea numerica.   
