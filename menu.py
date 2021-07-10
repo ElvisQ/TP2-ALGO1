@@ -1,4 +1,5 @@
 import opciones
+import service_drive
 
 MENU = '''Elija una de las siguientes opciones:
 1. Listar archivos de la carpeta actual.
@@ -12,6 +13,7 @@ MENU = '''Elija una de las siguientes opciones:
 '''
 
 def main():
+    service_drive.obtener_servicio()
     salida = False
     while not salida:
         print(MENU)
