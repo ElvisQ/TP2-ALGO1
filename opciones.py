@@ -1,4 +1,4 @@
-import listado, creacion, subida
+import listado, carpetasgen
 
 def validar_opcion() -> int:
 #Pide el ingreso de una opcion y verifica que sea numerica.   
@@ -12,15 +12,15 @@ def ejecutar_opcion(opcion: int, salida: bool) -> bool:
     if opcion == 1:
         listado.main_listado()
     elif opcion == 2:
-        creacion.main_creacion()
+        pass
     elif opcion == 3:
-        subida.main_subida()
+        pass
     elif opcion == 4:
         descargar_archivos()
     elif opcion == 5:
         sincronizar()
     elif opcion == 6:
-        generar_carpetas()
+        carpetasgen.main_carpetas()
     elif opcion == 7:
         actualizar_entregas()
     elif opcion == 8:
