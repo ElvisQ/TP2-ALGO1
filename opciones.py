@@ -16,13 +16,13 @@ def ejecutar_opcion(opcion: int, salida: bool) -> bool:
     elif opcion == 3:
         pass
     elif opcion == 4:
-        descargar_archivos()
+        pass
     elif opcion == 5:
-        sincronizar()
+        pass
     elif opcion == 6:
         carpetasgen.main_carpetas()
     elif opcion == 7:
-        actualizar_entregas()
+        pass
     elif opcion == 8:
         salida = True
     else:

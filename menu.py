@@ -1,6 +1,6 @@
 import opciones
 import service_drive
-
+import service_gmail
 MENU = '''Elija una de las siguientes opciones:
 1. Listar archivos de la carpeta actual.
 2. Crear un archivo.
@@ -14,6 +14,7 @@ MENU = '''Elija una de las siguientes opciones:
 
 def main():
     service_drive.obtener_servicio()
+    service_gmail.obtener_servicio()
     salida = False
     while not salida:
         print(MENU)
