@@ -2,9 +2,13 @@
 from apiclient import errors
 import os
 import service_gmail
+<<<<<<< HEAD
 import base64
 import zipfile
 import csv
+=======
+
+>>>>>>> parent of 47c0576 (funcion descargar archivo en carpetas gen)
 
 RUTA=os.getcwd()
 
@@ -22,12 +26,11 @@ else:
 '''
 def generar_carpetas_local(lista_asuntos:list,opcion:int):
     try:
-
         carpeta=lista_asuntos[(opcion)-1]
-        if not os.path.isdir(carpeta):
-            directorio_nuevo=os.path.join(RUTA,carpeta)
-            os.makedirs(directorio_nuevo)
 
+        directorio_nuevo=os.path.join(RUTA,carpeta)
+
+        os.makedirs(directorio_nuevo)
     except OSError:
         print('Error en el nombre de la ruta, Vuelva a seleccionar el mensaje')
 
@@ -49,6 +52,7 @@ def buscar_asunto():
             print(i["value"])
         if nameindict == "Date":
             print(i["value"])
+
 
 def descargar_archivo(servicio, idmsjes:list,opcion:int):
     try:
@@ -80,6 +84,7 @@ def descargar_archivo(servicio, idmsjes:list,opcion:int):
 
 def descomprimir_zip(archivo:str):
     pass
+
 
 
 
@@ -133,6 +138,7 @@ def opciones()->int:
 
 
 def main_carpetas()->None:
+
     servicio = service_gmail.obtener_servicio()
 
     opcion = opciones()
@@ -149,10 +155,8 @@ def main_carpetas()->None:
         descargar_archivo(servicio,lista_idmsjes,opcion) #descarga el archivo adjunto
 
         #falta descomprimir el zip y armar las carpetas con archivos csv
-
-
-
     elif opcion==2:
         pass
+
 
 main_carpetas()
