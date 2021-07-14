@@ -2,13 +2,10 @@
 from apiclient import errors
 import os
 import service_gmail
-<<<<<<< HEAD
+
 import base64
 import zipfile
 import csv
-=======
-
->>>>>>> parent of 47c0576 (funcion descargar archivo en carpetas gen)
 
 RUTA=os.getcwd()
 
@@ -54,9 +51,9 @@ def buscar_asunto():
             print(i["value"])
 
 
-def descargar_archivo(servicio, idmsjes:list,opcion:int):
+def descargar_archivo(servicio, idmsjes:list,opcion:int)->str:
     try:
-
+        nombre_archivo=''
         id_elegido=idmsjes[(opcion) - 1]
         mensaje=servicio.users().messages().get(userId='me',id=id_elegido,).execute()
         partes= mensaje['payload']['parts']         #lista de partes de un mensaje
@@ -74,6 +71,7 @@ def descargar_archivo(servicio, idmsjes:list,opcion:int):
 
                 with open(nombre_archivo,'wb') as archivo:
                     archivo.write(datos_de_archivo)
+        return nombre_archivo
 
     except errors.HttpError:
         print('Ocurrio un error vuelve a intentarlo')
@@ -83,8 +81,46 @@ def descargar_archivo(servicio, idmsjes:list,opcion:int):
 
 
 def descomprimir_zip(archivo:str):
-    pass
+    nombre, extension= os.path.splitext(archivo)
+    if extension!='.zip':
+        print(f'El archivo {nombre} no es un un archivo zip')
+    else:
+        archivozip= zipfile.ZipFile(archivo)
+        archivozip.extractall()
+        archivozip.close()
 
+
+def enlistar_doc_alum():
+    lista_docentes=[]
+    lista_alumnos=[]
+    dic_doc_alum={} #key:docente, value:[alumno correspondiente]
+    try:
+        with open('alumnos.csv',mode='r',newline='',encoding='UTF-8') as alumnos:
+            lector_csva= csv.reader(alumnos,delimiter=',')
+            #next(lector_csva)
+            for fila in lector_csva:
+                lista_alumnos.append(fila[0])
+        with open('docentes.csv',mode='r',newline='',encoding='UTF-8') as docentes:
+            lector_csvd= csv.reader(docentes, delimiter=',')
+            #next(lector_csvd)
+            for fila in lector_csvd:
+                lista_docentes.append(fila[0])
+        with open('docente-alumnos.csv',mode='r',newline='',encoding='UTF-8') as doc_alum:
+            csv_reader=csv.reader(doc_alum,delimiter=',')
+            #next(csv_reader)
+            for fila in csv_reader:
+                if fila[0] not in dic_doc_alum:
+                    dic_doc_alum[fila[0]]=[]
+                    dic_doc_alum[fila[0]].append(fila[1])
+                else:
+                    dic_doc_alum[fila[0]].append(fila[1])
+
+
+
+
+
+    except IOError:
+        print('Falta un archivo o revisa bien el nombre del archivo')
 
 
 
@@ -119,10 +155,14 @@ def seleccionar_email(lista_asuntos:list, servicio):
     opcion = input('Por favor elige cual crees que sea el mensaje, si no aparece presiona 0 para actualizar: ')
     while not opcion.isnumeric():
         opcion=input('Ingrese un numero o 0 para actualizar: ')
-    if opcion=='0':
+    while opcion=='0':
         lista_ids=buscar_emails(servicio)
         lista_asuntos=mostrar_emails(servicio,lista_ids)
-        seleccionar_email(lista_asuntos,servicio)
+        print('A continuacion se muestra los ultimos 5 mails recibidos con sus asuntos: \n')
+        for i in range(5):
+            print(f'{i + 1}) {lista_asuntos[i]}')
+        opcion = input('Por favor elige cual crees que sea el mensaje, si no aparece presiona 0 para actualizar: ')
+
     else:
         return int(opcion)
 
@@ -152,9 +192,12 @@ def main_carpetas()->None:
 
         generar_carpetas_local(lista_asuntos,opcion) #genera las carpetas localmente con el asunto del mail elegido
 
-        descargar_archivo(servicio,lista_idmsjes,opcion) #descarga el archivo adjunto
+        nombre_archivo= descargar_archivo(servicio,lista_idmsjes,opcion) #descarga el archivo adjunto
 
-        #falta descomprimir el zip y armar las carpetas con archivos csv
+        descomprimir_zip(nombre_archivo)
+
+
+
     elif opcion==2:
         pass
 
