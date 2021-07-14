@@ -1,0 +1,711 @@
+from random import randint, shuffle, uniform, sample
+
+def tablero(tamanio=int) -> list:
+    '''
+    PRE: Toma el valor entero que es el tamaño de la matriz
+    POST: Retorna una lista de listas del tamaño dado
+    '''
+    matriz = []
+    for filas in range(tamanio):
+        asteriscos = []
+        for columnas in range(tamanio):
+            asteriscos.append("|*****|")
+        matriz.append(asteriscos)
+    return matriz
+
+
+def cartas(tam_matriz=int) -> list:
+    '''
+    PRE: Toma el tamaño de la matriz generada.
+    POST: Retorna pares de cartas de numeros aleatorios.
+    '''
+    num_cartas = (tam_matriz * tam_matriz) // 2
+    cartas = [0] * num_cartas
+    cartas = sample(range(1, 201), num_cartas)
+    cartas.extend(cartas)
+    return cartas
+
+
+def mezclar_cartas_shuffle(matriz=list) -> None:
+    '''
+    PRE: Recibe la matriz a mezclar
+    POST: -
+
+    '''
+    for filas in matriz:
+        shuffle(filas)
+    shuffle(matriz)
+
+
+def tablero_cartas(tamanio=int) -> list:
+    '''
+    PRE: Recibe el tamaño de la matriz
+    POST: Retorna un tablero con las cartas de numeros aleatorios
+
+
+
+
+
+
+
+
+def usar_cartas_mod_matriz(codigo:int, tablero:list, tablanum:list) -> list:
+    '''
+    PRE: Recibe el codigo del comodin, la matriz en juego y la matriz de cartas.
+    POST: Retorna a la matriz modificada segun el codigo del comodin.
+    '''
+
+    if codigo == 3:
+        new = carta_toti(tablero, tablanum)
+        return new
+    elif codigo == 4:
+        new = carta_fatality(tablero)
+        return new
+    '''
+    matrizz = tablero(tamanio)
+    tam_matriz = len(matrizz)
+    cartas_numeros = cartas(tam_matriz)
+    tam_cartas_numeros = len(cartas_numeros)
+    for filas in range(tam_matriz):
+        matrizz[filas]
+        for columnas in range(tam_matriz):
+            matrizz[filas][columnas] = cartas_numeros.pop()
+    mezclar_cartas_shuffle(matrizz)
+
+    return matrizz
+
+
+def printear_tablero(matriz: list) -> None:
+    '''
+     PRE: Recibe una matriz .
+     POST: Imprime la matriz asignada.
+    '''
+    tamanio_matriz = len(matriz)
+    for fila in range(tamanio_matriz):
+        for columna in range(tamanio_matriz):
+            print(matriz[fila][columna], end=" ")
+        print("\n")
+
+
+def carta_toti_vertical(tablero=list) -> list:
+    '''
+     PRE: Recibe un tablero.
+     POST: Retorna el tablero con los valores espejados verticalemente.
+    '''
+    new_table = carta_fatality(tablero)
+
+    for fila in new_table:
+        fila.reverse()
+    new_table = carta_fatality(new_table)
+    return new_table
+
+
+def dado() -> int:
+    '''
+    POST: Retorna un numero aleatorio del 1 al 6 similar al dado
+    '''
+    sorteo = randint(1, 6)
+    if sorteo == 1:
+        return 1
+    elif sorteo == 2:
+        return 2
+    elif sorteo == 3:
+        return 3
+    elif sorteo == 4:
+        return 4
+    else:
+        return sorteo
+
+
+def carta_toti(tablerodadovuelta=list, tablanum=list) -> list:
+    '''
+    PRE: Recibe la matriz en juego y la matriz de cartas.
+    POST: Modifica de forma azaroza a la matriz espejandola de manera horizontal o vertical.
+    '''
+    sorteo = randint(1, 2)
+    nuevo = []
+    if sorteo == 1:
+        for fila in tablerodadovuelta:
+            fila.reverse()
+        nuevo.append(tablerodadovuelta)
+        for fila in tablanum:
+            fila.reverse()
+        nuevo.append(tablanum)
+        return nuevo
+
+    else:
+        nuevo.append(carta_toti_vertical(tablerodadovuelta))
+        nuevo.append(carta_toti_vertical(tablanum))
+        return nuevo
+
+
+def carta_fatality(tablero=list) -> list:
+    '''
+    PRE: Recibe la matriz a modificar.
+    POST: Retorna a la matriz de forma transpuesta.
+    '''
+    tam_tablero = len(tablero)
+    transpuesta = []
+    for filat in range(tam_tablero):
+        transpuesta.append([])
+        for columnat in range(tam_tablero):
+            transpuesta[filat].append(tablero[columnat][filat])
+    return transpuesta
+
+
+def comodines_guardados(x=str, comodines=dict) -> int:
+    '''
+    PRE: Recibe la respuesta en str y el diccionario de los comodines guardados.
+    POST: Retorna un numero entero de forma de codigo para la carta seleccionada
+    '''
+    if x == "s":
+        if len(comodines) == 0:
+            print("Todavia no tienes cartas ")
+            return 0
+        else:
+            print("Tus cartas son estas:")
+            cartass = comodines.keys()
+            valores = comodines.values()
+            print("\n".join(cartass))
+            eleccion = input(" Escribe cual carta quieres usar")
+            eleccion.lower()
+            if eleccion == 'replay':
+                comodines['replay'] -= 1
+                if comodines['replay'] == 0:
+                    del comodines['replay']
+                return 1
+            elif eleccion == 'layout':
+                comodines['layout'] -= 1
+                if comodines['layout'] == 0:
+                    del comodines['layout']
+                return 2
+            elif eleccion == 'toti':
+                comodines['toti'] -= 1
+                if comodines['toti'] == 0:
+                    del comodines['toti']
+                return 3
+            elif eleccion == 'fatality':
+                comodines['fatality'] -= 1
+                if comodines['fatality'] == 0:
+                    del comodines['fatality']
+                return 4
+    else:
+        return 0
+
+
+def efecto_comodin_tabla(clave: int, tablaasterisco: list, tabla_cartas: list) -> list:
+    '''
+    PRE: Recibe la clave de la carta de dato entero, recibe la matriz en juego y la matriz de cartas.
+    POST: Retorna a la matriz modificada segun  la clave asignada.
+    '''
+    if clave != 3:
+        tabla_desordenada = []
+        tablaasterisco = usar_cartas_mod_matriz(clave, tablaasterisco, tabla_cartas)
+        tabla_desordenada.append(tablaasterisco)
+        tabla_cartas = usar_cartas_mod_matriz(clave, tabla_cartas, tabla_cartas)
+        tabla_desordenada.append(tabla_cartas)
+        return tabla_desordenada
+
+    else:
+        espejado = usar_cartas_mod_matriz(clave, tablaasterisco, tabla_cartas)
+        return espejado
+
+
+def menu_duracion_partida() -> int:
+    '''
+    PRE:-
+    POST:Retorna el valor entero del tamaño de la matriz.
+    '''
+    print("Elija una opcion: ")
+    opcion = int(input(" 1) Corto: tablero 4x4\n 2) Medio: tablero 8x8\n 3) Largo: tablero 12x12\n"))
+    if opcion == 1:
+        print("\nOpcion Guardada!")
+        return 4
+    elif opcion == 2:
+        print("\nOpcion Guardada!")
+        return 8
+    elif opcion == 3:
+        print("\nOpcion Guardada!")
+        return 12
+
+
+def menu_probabilidades() -> list:
+    '''
+    PRE: -
+    POST: Retorna una lista de las probabilidades asignadas por el usuario.
+    '''
+    prob_cartas = []
+    cartareplayy = int(input("Ingrese una probabilidad del 1 al 100(sin '%')para la Carta Replay: "))
+    prob_cartas.append(cartareplayy)
+    cartalayoutt = int(input("Ingrese una probabilidad del 1 al 100(sin '%')para la Carta Layout: "))
+    prob_cartas.append(cartalayoutt)
+    cartatotii = int(input("Ingrese una probabilidad del 1 al 100(sin '%')para la Carta Toti: "))
+    prob_cartas.append(cartatotii)
+    cartafatalityy = int(input("Ingrese una probabilidad del 1 al 100(sin '%')para la Carta Fatality: "))
+    prob_cartas.append(cartafatalityy)
+    print("Opcion guardada!")
+    return prob_cartas
+
+
+def configuracion_juego() -> list:
+    '''
+    PRE: -
+    POST: Retorna una lista con las configuraciones modificadas.
+    '''
+    print("Configuracion: \n")
+    print("1) Duracion de la partida")
+    print("2) Probabilidades de cartas")
+    print("3) Atras")
+    opcion = int(input(""))
+    cambio_dur = 4
+    cambio_prob = None
+    cambio_total = []
+
+    if opcion == 1:
+        cambio_dur = menu_duracion_partida()
+        cambio_total.append(cambio_dur)
+
+    elif opcion == 2:
+        cambio_prob = menu_probabilidades()
+        return cambio_prob
+    else:
+        main()
+    return cambio_total
+
+
+def score(usuarios: dict, nombre_ganador: str) -> int:
+    if nombre_ganador not in usuarios:
+        usuarios[nombre_ganador] = 0
+        usuarios[nombre_ganador] += 1
+    else:
+        usuarios[nombre_ganador] += 1
+    return usuarios[nombre_ganador]
+
+
+def usuarios() -> list:
+    '''
+    PRE:
+    POST: Retorna una lista con los nombres de los jugadores:
+    '''
+    nombre1 = input("Ingrese el nombre del jugador 1: ")
+    nombre2 = input("Ingrese el nombre del jugador 2: ")
+    Usuarios = [nombre1, nombre2]
+    return Usuarios
+
+
+def desarrollo_del_juego(tam=int, prob=list) -> str:
+    '''
+    PRE: Recibe el tamaño de la matriz para el juego y la lista de probabilidades de los comodines.
+    POST: Retorna el nombre del ganador.
+    '''
+    nombres = usuarios()
+    pares_p1 = 0
+    pares_p2 = 0
+    cartas_guardadas1 = {}
+    cartas_guardadas2 = {}
+    tablaasteriscos = tablero(tam)
+    tablaasteriscos2 = tablero(tam)
+    tabla1 = tablero_cartas(tam)
+    tabla2 = tablero_cartas(tam)
+    print(tabla1)
+    print(tabla2)
+    turno1 = 1
+    turno2 = 0
+    ganadores = {}
+    game=True
+    while game:
+        if turno1 > 0:
+            turno1 -= 1
+            gano_replay = False
+            print("--------------------------")
+            print("Es el turno del jugador ", nombres[0])
+            numero = dado()
+            cod = dado_probabilidad(numero, prob)
+            if cod != 0:
+                eleccion = validar_carta(cod)
+                if eleccion[0] == "s":
+                    if eleccion[1] == 1:
+                        gano_replay = True
+                        print("!Hecho, vas a tener un turno mas")
+                    else:
+                        nuevas_tablas_rivalp2 = efecto_comodin_tabla(eleccion[1], tablaasteriscos, tabla1)
+                        tablaasteriscos = nuevas_tablas_rivalp2[0]
+                        tabla1 = nuevas_tablas_rivalp2[1]
+                        print("Hecho mareaste a tu rival!")
+                else:
+                    if eleccion[2] not in cartas_guardadas1:
+                        cartas_guardadas1[eleccion[2]] = 0
+                        cartas_guardadas1[eleccion[2]] += 1
+                    else:
+                        cartas_guardadas1[eleccion[2]] += 1
+                    print("!Carta guardada")
+            else:
+                print("No has ganado ninguna carta comodin")
+
+            respuesta = input("Quieres usar alguna carta guardada? s/n")
+            clave = comodines_guardados(respuesta, cartas_guardadas1)
+            if clave != 0:
+                if clave == 1:
+                    gano_replay = True
+                    print("!Hecho, vas a tener un turno mas")
+                else:
+                    nuevas_tablas_rivalp2 = efecto_comodin_tabla(clave, tablaasteriscos, tabla1)
+                    tablaasteriscos = nuevas_tablas_rivalp2[0]
+                    tabla1 = nuevas_tablas_rivalp2[1]
+                    print("Hecho! Mareaste al rival")
+
+            printear_tablero(tablaasteriscos2)
+            print("adivina las cartas de tu rival!")
+            coord = pedir_coordenadas(tablaasteriscos2)
+            mostrar_coordenadas(coord, tabla2, tablaasteriscos2, 0)
+            coord2 = pedir_coordenadas(tablaasteriscos2)
+            coord_general = coord + coord2
+            mostrar_coordenadas(coord_general, tabla2, tablaasteriscos2, 1)
+            validacion = validar_coordenadas(coord_general, tabla2)
+
+            if validacion:
+                pares_p1 += 1
+                turno1 += 1
+                tablaasteriscos2 = dejar_dada_vuelta(coord_general, tabla2, tablaasteriscos2)
+                if gano_replay:
+                    turno1 += 1
+            else:
+                tablaasteriscos2 = devolver_cartas(coord_general, tablaasteriscos2)
+                if gano_replay:
+                    turno1 += 1
+                else:
+                    turno1 -= 1
+                    turno2 = 1
+
+
+
+        elif turno2 > 0:
+            turno2 -= 1
+            print("--------------------------")
+            print("Es el turno del jugador ", nombres[1])
+            printear_tablero(tablaasteriscos)
+            print("adivina las cartas de tu rival!")
+            numero = dado()
+            cod = dado_probabilidad(numero, prob)
+            gano_replay2 = False
+            if cod != 0:
+                eleccion = validar_carta(cod)
+                if eleccion[0] == "s":
+                    if eleccion[1] == 1:
+                        print("!Hecho, vas a tener un turno mas")
+                        gano_replay2 = True
+                    else:
+                        nuevas_tablas_rivalp1 = efecto_comodin_tabla(eleccion[1], tablaasteriscos2, tabla2)
+                        tablaasteriscos2 = nuevas_tablas_rivalp1[0]
+                        tabla2 = nuevas_tablas_rivalp1[1]
+                        print("Hecho, mareaste a tu rival!")
+
+                else:
+                    if eleccion[2] not in cartas_guardadas2:
+                        cartas_guardadas2[eleccion[2]] = 0
+                        cartas_guardadas2[eleccion[2]] += 1
+                    else:
+                        cartas_guardadas2[eleccion[2]] += 1
+                    print("!Carta guardada")
+            else:
+                print("No has ganado ninguna carta comodin")
+
+            respuesta = input("Quieres usar alguna carta guardada? s/n")
+            clave = comodines_guardados(respuesta, cartas_guardadas2)
+            if clave != 0:
+                if clave == 1:
+                    gano_replay = True
+                    print("!Hecho, vas a tener un turno mas")
+                else:
+                    nuevas_tablas_rivalp1 = efecto_comodin_tabla(clave, tablaasteriscos2, tabla2)
+                    tablaasteriscos2 = nuevas_tablas_rivalp1[0]
+                    tabla2 = nuevas_tablas_rivalp1[1]
+                    print("Hecho, Mareaste a tu rival!")
+
+            coord = pedir_coordenadas( tablaasteriscos)
+            mostrar_coordenadas(coord, tabla1, tablaasteriscos, 0)
+            coord2 = pedir_coordenadas(tablaasteriscos)
+            coord_general = coord + coord2
+            mostrar_coordenadas(coord_general, tabla1, tablaasteriscos, 1)
+            validacion = validar_coordenadas(coord_general, tabla1)
+            if validacion:
+                tablaasteriscos = dejar_dada_vuelta(coord_general, tabla1, tablaasteriscos)
+                pares_p2 += 1
+                turno2 += 1
+                if gano_replay2:
+                    turno2 += 1
+            else:
+                tablaasteriscos = devolver_cartas(coord_general, tablaasteriscos)
+                if gano_replay2:
+                    turno2 += 1
+                else:
+                    turno2 -= 1
+                    turno1 = 1
+        if pares_p1==((tam*tam)//2):
+            game=False
+        elif pares_p2==((tam*tam)//2):
+            game=False
+
+
+    else:
+        if pares_p1 == ((tam * tam) // 2):
+            print(f"Ha ganado el jugador {nombres[0]} ")
+            return nombres[0]
+
+
+        else:
+            print(f"Ha ganado el jugador {nombres[1]}")
+            return nombres[1]
+
+
+def dado_probabilidad(carta=int, probabilidades=list) -> int:
+    '''
+    PRE: Recibe el numero de comodin y una lista con la probabilidades de cada comodin
+    POST: Retorna un codigo que representa el numero del comodin ganado.
+    '''
+    division = [i / 10 for i in probabilidades]
+    codigo = 0
+    if carta == 1:
+        sorteo = uniform(1, 10)
+        prob_carta_1 = division[0]
+        if sorteo <= prob_carta_1:
+            codigo = 1
+        return codigo
+    elif carta == 2:
+        sorteo = uniform(1, 10)
+        prob_carta_2 = division[1]
+        if sorteo <= prob_carta_2:
+            codigo = 2
+        return codigo
+    elif carta == 3:
+        sorteo = uniform(1, 10)
+        prob_carta_3 = division[2]
+        if sorteo <= prob_carta_3:
+            codigo = 3
+        return codigo
+    elif carta == 4:
+        sorteo = uniform(1, 10)
+        prob_carta_4 = division[3]
+        if sorteo <= prob_carta_4:
+            codigo = 4
+        return codigo
+    else:
+        return 0
+
+
+def validar_carta(codee=int) -> list:
+    '''
+    PRE: Recibe el numero entero del comodin.
+    POST: Retorna una lista con la Respuesta, el numero y nombre de comodin.
+    '''
+    validacion_carta = []
+    respuesta = ""
+    if codee == 1:
+        print("Has ganado la carta Replay")
+        respuesta = input("Quieres usarla ahora? s/n:  ")
+        validacion_carta.append(respuesta)
+        validacion_carta.append(codee)
+        validacion_carta.append('replay')
+
+        return validacion_carta
+
+    elif codee == 2:
+        print("Has ganado la Carta Layout")
+        respuesta = input("Quieres usarla ahora? s/n: ")
+        validacion_carta.append(respuesta)
+        validacion_carta.append(codee)
+        validacion_carta.append('layout')
+
+        return validacion_carta
+    elif codee == 3:
+        print("Has ganado la Carta Toti")
+        respuesta = input("Quieres usarla ahora? s/n: ")
+        validacion_carta.append(respuesta)
+        validacion_carta.append(codee)
+        validacion_carta.append('toti')
+
+        return validacion_carta
+    elif codee == 4:
+        print("Has ganado la carta Fatality")
+        respuesta = input("Quieres usarla ahora? s/n: ")
+        validacion_carta.append(respuesta)
+        validacion_carta.append(codee)
+        validacion_carta.append('fatality')
+
+        return validacion_carta
+
+
+def validar_coordenadas(coordenadas=list, matriz=list) -> bool:
+    '''
+    PRE: Recibe la lista de coordenadas y la matriz de cartas.
+    POST: Retorna un booleano.
+    '''
+    x = coordenadas[0]
+    y = coordenadas[1]
+    x2 = coordenadas[2]
+    y2 = coordenadas[3]
+    if matriz[x - 1][y - 1] == matriz[x2 - 1][y2 - 1]:
+        print("Acertaste! tienes  otro turno")
+
+        return True
+
+    else:
+        print("No acertaste!")
+        return False
+
+
+def devolver_cartas(coordenadas: list, matriz: list) -> list:
+    '''
+    PRE: Recibe la lista de coordenadas y la matriz en juego.
+    POST:Retorna a la matriz con las cartas tapadas en las coordenadas asignadas.
+    '''
+    matriz[coordenadas[0] - 1][coordenadas[1] - 1] = "|*****|"
+    matriz[coordenadas[2] - 1][coordenadas[3] - 1] = "|*****|"
+    return matriz
+
+
+def dejar_dada_vuelta(coordenadas: list, matriz: list, tablaasterisco: list) -> list:
+    '''
+    PRE: Recibe la lista de coordenadas, la matriz de cartas y la matriz en juego.
+    POST: Retorna la matriz con las cartas dada vuelta en las coordenadas asignadas
+    '''
+    tablaasterisco[coordenadas[0] - 1][coordenadas[1] - 1] = matriz[coordenadas[0] - 1][coordenadas[1] - 1]
+    tablaasterisco[coordenadas[2] - 1][coordenadas[3] - 1] = matriz[coordenadas[2] - 1][coordenadas[3] - 1]
+    return tablaasterisco
+
+
+def usar_cartas_mod_matriz(codigo=int, tablero=list, tablanum=list) -> list:
+    '''
+    PRE: Recibe el codigo del comodin, la matriz en juego y la matriz de cartas.
+    POST: Retorna a la matriz modificada segun el codigo del comodin.
+    '''
+
+    if codigo == 2:
+        mezclar_cartas_shuffle(tablero)
+        return tablero
+    elif codigo == 3:
+        new = carta_toti(tablero, tablanum)
+        return new
+    elif codigo == 4:
+        new = carta_fatality(tablero)
+        return new
+
+
+def mostrar_score(lista_de_ganadores: dict) -> None:
+    '''
+
+    :param lista_de_ganadores: Toma el dicccionario donde tienen el nombre de los jugadores y sus respectivos puntos.
+    :return:
+    '''
+    x=1
+    while x!=0:
+        itmganadores= lista_de_ganadores.items()
+        puntos_ordenados={}
+
+        for nombre, puntos in sorted(itmganadores, key = lambda puntos: puntos[1],reverse=True):
+            puntos_ordenados[nombre]=puntos
+        print("Tabla de ganadores: \n")
+        for nombre in puntos_ordenados:
+            print(nombre, ":", puntos_ordenados[nombre],"pts.")
+        x=int(input("\nPresione cero para volver al menu principal: "))
+
+
+
+def pedir_coordenadas(tableroasteriscos: list) -> list:
+    '''
+    PRE: Recibe el tablero en juego.
+    POST: Retorna las coordenadas pedidas, evaluando si es que las coordenadas ya estan se elijieron o no.
+    '''
+    coordenadas = []
+    x = True
+    while x:
+        coordenadas = []
+        coordenadasfila = int(input("Ingrese la coordenada fila(sin contar el 0): "))
+        coordenadas.append(coordenadasfila)
+        coordenadascolumnas = int(input("Ingrese la coordenada columna(sin contar el 0): "))
+        coordenadas.append(coordenadascolumnas)
+        if tableroasteriscos[coordenadas[0] - 1][coordenadas[1] - 1] != "|*****|":
+            print("Coordenada ya elegida elija otra ")
+        else:
+            x = False
+
+    return coordenadas
+
+
+def mostrar_coordenadas(coordenadass=list, matriz=list, tablerroasterisco=list, contador=int) -> None:
+    '''
+    PRE: Recibe la lista de coordenadas, la matriz de cartas, la matriz en juego y un contador
+         para verificar si imprimir la primera coordenada o todas las coordenadas ingresadas.
+    POST:-
+    '''
+    if contador == 0:
+        x = coordenadass[0]
+        y = coordenadass[1]
+        tablerroasterisco[x - 1][y - 1] = matriz[x - 1][y - 1]
+        printear_tablero(tablerroasterisco)
+
+
+    else:
+        x = coordenadass[0]
+        y = coordenadass[1]
+        x2 = coordenadass[2]
+        y2 = coordenadass[3]
+        tablerroasterisco[x - 1][y - 1] = matriz[x - 1][y - 1]
+        tablerroasterisco[x2 - 1][y2 - 1] = matriz[x2 - 1][y2 - 1]
+        printear_tablero(tablerroasterisco)
+        contador = 0
+
+
+def turnos() -> None:
+    '''
+    Imprime los nombres de los usurios segun el turno.
+    '''
+    nombres = usuarios()
+    for i in range(len(nombres)):
+        print(f"El turno es de {nombres[i]}")
+
+
+def menu_opciones() -> int:
+    '''
+    PRE:-
+    POST: Retorna el numero de opcion elegida por el usuario.
+    '''
+    print("******Bienvenidos al juego de la memoria******")
+    print("Marque 1) para jugar")
+    print("Marque 2) para la configuración del juego")
+    print("Marque 3) para ver el score")
+    print("Marque 4) para salir del juego")
+    opcion = int(input(""))
+    return opcion
+
+
+def main() -> None:
+    ejecucion = True
+    tabla = 4
+    probabilidad = [80, 80, 90, 80]
+    ganadores = {}
+    while ejecucion:
+        x = menu_opciones()
+        duracion = tabla
+        prob = probabilidad
+        datos_cambiados = []
+        if x == 1:
+            ganador = desarrollo_del_juego(duracion, prob)
+            ganadores[ganador] = score(ganadores, ganador)
+
+        elif x == 2:
+            datos_cambiados = configuracion_juego()
+            if len(datos_cambiados) == 1:
+                tabla = datos_cambiados[0]
+            elif len(datos_cambiados) != 1:
+                probabilidad = datos_cambiados
+
+        elif x == 3:
+            mostrar_score(ganadores)
+        else:
+            ejecucion = False
+
+    print("Fin del Programa")
+
+
+main()

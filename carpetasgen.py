@@ -1,7 +1,7 @@
 import os
 import service_gmail
-
-
+import base64
+from apiclient import errors
 RUTA=os.getcwd()
 
 
@@ -18,11 +18,12 @@ else:
 '''
 def generar_carpetas_local(lista_asuntos:list,opcion:int):
     try:
+
         carpeta=lista_asuntos[(opcion)-1]
+        if not os.path.isdir(carpeta):
+            directorio_nuevo=os.path.join(RUTA,carpeta)
+            os.makedirs(directorio_nuevo)
 
-        directorio_nuevo=os.path.join(RUTA,carpeta)
-
-        os.makedirs(directorio_nuevo)
     except OSError:
         print('Error en el nombre de la ruta, Vuelva a seleccionar el mensaje')
 
@@ -44,6 +45,41 @@ def buscar_asunto():
             print(i["value"])
         if nameindict == "Date":
             print(i["value"])
+
+def descargar_archivo(servicio, idmsjes:list,opcion:int):
+    try:
+
+        id_elegido=idmsjes[(opcion) - 1]
+        mensaje=servicio.users().messages().get(userId='me',id=id_elegido,).execute()
+        partes= mensaje['payload']['parts']         #lista de partes de un mensaje
+
+        for parte in partes:
+            if parte['filename']:
+                if 'data' in parte['body']:
+                    data= partes['body']['data']
+                else:
+                    adjuntoid=parte['body']['attachmentId']
+                    adjunto=servicio.users().messages().attachments().get(userId='me',messageId=id_elegido, id=adjuntoid).execute()
+                    data=adjunto['data']
+                nombre_archivo= parte['filename']
+                datos_de_archivo= base64.urlsafe_b64decode(data.encode('UTF-8'))
+
+                with open(nombre_archivo,'wb') as archivo:
+                    archivo.write(datos_de_archivo)
+
+    except errors.HttpError:
+        print('Ocurrio un error vuelve a intentarlo')
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -96,9 +132,14 @@ def main_carpetas()->None:
     opcion=opciones()
     if opcion==1:
         lista_idmsjes = buscar_emails(servicio)
+
         lista_asuntos = mostrar_emails(servicio, lista_idmsjes)
+
         opcion = seleccionar_email(lista_asuntos, servicio)
+
         generar_carpetas_local(lista_asuntos,opcion)
+
+        descargar_archivo(servicio,lista_idmsjes,opcion)
     elif opcion==2:
         pass
 
