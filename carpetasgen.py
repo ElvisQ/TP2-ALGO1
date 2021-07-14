@@ -1,7 +1,11 @@
+
+from apiclient import errors
 import os
 import service_gmail
 import base64
-from apiclient import errors
+import zipfile
+import csv
+
 RUTA=os.getcwd()
 
 
@@ -74,7 +78,8 @@ def descargar_archivo(servicio, idmsjes:list,opcion:int):
 
 
 
-
+def descomprimir_zip(archivo:str):
+    pass
 
 
 
@@ -128,18 +133,25 @@ def opciones()->int:
 
 
 def main_carpetas()->None:
-    servicio= service_gmail.obtener_servicio()
-    opcion=opciones()
-    if opcion==1:
-        lista_idmsjes = buscar_emails(servicio)
+    servicio = service_gmail.obtener_servicio()
 
-        lista_asuntos = mostrar_emails(servicio, lista_idmsjes)
+    opcion = opciones()
 
-        opcion = seleccionar_email(lista_asuntos, servicio)
+    if opcion == 1:
+        lista_idmsjes = buscar_emails(servicio) #busca los ultimos 5 mensajes
 
-        generar_carpetas_local(lista_asuntos,opcion)
+        lista_asuntos = mostrar_emails(servicio, lista_idmsjes) #muestra los ultimos 5 mensajes por Asunto
 
-        descargar_archivo(servicio,lista_idmsjes,opcion)
+        opcion = seleccionar_email(lista_asuntos, servicio) #el usuario elije cual mensaje
+
+        generar_carpetas_local(lista_asuntos,opcion) #genera las carpetas localmente con el asunto del mail elegido
+
+        descargar_archivo(servicio,lista_idmsjes,opcion) #descarga el archivo adjunto
+
+        #falta descomprimir el zip y armar las carpetas con archivos csv
+
+
+
     elif opcion==2:
         pass
 
