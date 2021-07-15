@@ -1,6 +1,8 @@
 
 from apiclient import errors
 import os
+
+import service_drive
 import service_gmail
 
 import base64
@@ -10,17 +12,6 @@ import csv
 RUTA=os.getcwd()
 
 
-'''servicio=service_gmail.obtener_servicio()
-resultados= servicio.users().messages().list(userId='me',labelIds = ['INBOX']).execute()
-mensajes=resultados.get('messages', [])
-if not mensajes:
-    print("No messages found.")
-else:
-    print("Message snippets:")
-    for message in mensajes:
-        msg = servicio.users().messages().get(userId='me', id=message['id']).execute()
-        print(msg['snippet'])
-'''
 def generar_carpetas_local(lista_asuntos:list,opcion:int):
     try:
         carpeta=lista_asuntos[(opcion)-1]
@@ -90,34 +81,36 @@ def descomprimir_zip(archivo:str):
         archivozip.close()
 
 
-def enlistar_doc_alum():
+def enlistar_doc_alum()->list:
     lista_docentes=[]
     lista_alumnos=[]
     dic_doc_alum={} #key:docente, value:[alumno correspondiente]
+    lista_total=[]
     try:
         with open('alumnos.csv',mode='r',newline='',encoding='UTF-8') as alumnos:
             lector_csva= csv.reader(alumnos,delimiter=',')
-            #next(lector_csva)
+            next(lector_csva)
             for fila in lector_csva:
                 lista_alumnos.append(fila[0])
+            lista_total.append(lista_alumnos)
         with open('docentes.csv',mode='r',newline='',encoding='UTF-8') as docentes:
             lector_csvd= csv.reader(docentes, delimiter=',')
-            #next(lector_csvd)
+            next(lector_csvd)
             for fila in lector_csvd:
                 lista_docentes.append(fila[0])
+            lista_total.append(lista_docentes)
         with open('docente-alumnos.csv',mode='r',newline='',encoding='UTF-8') as doc_alum:
             csv_reader=csv.reader(doc_alum,delimiter=',')
-            #next(csv_reader)
+            next(csv_reader)
             for fila in csv_reader:
                 if fila[0] not in dic_doc_alum:
                     dic_doc_alum[fila[0]]=[]
                     dic_doc_alum[fila[0]].append(fila[1])
                 else:
                     dic_doc_alum[fila[0]].append(fila[1])
+            lista_total.append(dic_doc_alum)
 
-
-
-
+        return lista_total
 
     except IOError:
         print('Falta un archivo o revisa bien el nombre del archivo')
@@ -175,31 +168,59 @@ def opciones()->int:
         opcion=input('\nError, Vuelva a ingresar: ')
     return int(opcion)
 
+def anidar_carpetas(lista_asuntos, opcion, lista_csv):
+    carpeta_de_parcial= lista_asuntos[(opcion) - 1]
+    direccion_evaluacion= os.path.join(RUTA,carpeta_de_parcial)
+    lista_alumnos=lista_csv[0]
+    lista_docentes=lista_csv[1]
+    doc_alumno=lista_csv[2]
+    print(doc_alumno)
+    print(type(doc_alumno))
+    lista_paths=[]
+    '''for docente in lista_docentes:
+        dir=os.path.join(direccion_evaluacion, docente)
+        os.mkdir(dir)'''
+
+    for docente in doc_alumno:
+        for lista in range(len(doc_alumno[docente])):
+            direccion1= os.path.join(direccion_evaluacion,docente)
+
+            direccion2=os.path.join(direccion1,doc_alumno[docente][lista])
+            os.makedirs(direccion2)
+
+
+
+
+
 
 
 def main_carpetas()->None:
 
-    servicio = service_gmail.obtener_servicio()
+    servicio_gmail = service_gmail.obtener_servicio()
+    servicio_drive= service_drive.obtener_servicio()
 
     opcion = opciones()
 
     if opcion == 1:
-        lista_idmsjes = buscar_emails(servicio) #busca los ultimos 5 mensajes
+        lista_idmsjes = buscar_emails(servicio_gmail) #busca los ultimos 5 mensajes
 
-        lista_asuntos = mostrar_emails(servicio, lista_idmsjes) #muestra los ultimos 5 mensajes por Asunto
+        lista_asuntos = mostrar_emails(servicio_gmail, lista_idmsjes) #muestra los ultimos 5 mensajes por Asunto
 
-        opcion = seleccionar_email(lista_asuntos, servicio) #el usuario elije cual mensaje
+        opcion = seleccionar_email(lista_asuntos, servicio_gmail) #el usuario elije cual mensaje
 
         generar_carpetas_local(lista_asuntos,opcion) #genera las carpetas localmente con el asunto del mail elegido
 
-        nombre_archivo= descargar_archivo(servicio,lista_idmsjes,opcion) #descarga el archivo adjunto
+        nombre_archivo= descargar_archivo(servicio_gmail,lista_idmsjes,opcion) #descarga el archivo adjunto
 
         descomprimir_zip(nombre_archivo)
 
+        listas_csv=enlistar_doc_alum()
 
+        anidar_carpetas(lista_asuntos,opcion,listas_csv)
 
     elif opcion==2:
         pass
+
 
 
 main_carpetas()
