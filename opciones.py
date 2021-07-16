@@ -2,7 +2,7 @@ import listado, carpetasgen
 
 def validar_opcion() -> int:
 #Pide el ingreso de una opcion y verifica que sea numerica.   
-    opcion = input()
+    opcion = input('\nIngrese una opcion: ')
     while not opcion.isnumeric():
         opcion = input("Entrada no valida. Debe ingresar un numero: ")
     return int(opcion)

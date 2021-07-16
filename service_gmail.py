@@ -18,15 +18,15 @@ ARCHIVO_SECRET_CLIENT = 'client_secret_gmail.json'
 def cargar_credenciales() -> Credentials:
     credencial = None
 
-    if os.path.exists('token.json'):
-        with open('token.json', 'r'):
-            credencial = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists('token_gmail.json'):
+        with open('token_gmail.json', 'r'):
+            credencial = Credentials.from_authorized_user_file('token_gmail.json', SCOPES)
 
     return credencial
 
 
 def guardar_credenciales(credencial: Credentials) -> None:
-    with open('token.json', 'w') as token:
+    with open('token_gmail.json', 'w') as token:
         token.write(credencial.to_json())
 
 
@@ -67,26 +67,3 @@ def obtener_servicio() -> Resource:
     return build('gmail', 'v1', credentials=generar_credenciales())
 
 
-'''servicio=obtener_servicio()
-
-def buscar_emails(servicio)->list:
-    lista_final=[]
-    emails= servicio.users().messages().list(userId='me',maxResults=5).execute()
-    mensajes= emails['messages']
-    for ids in mensajes:
-        lista_final.append(ids['id'])
-    return lista_final
-
-def mostrar_emails(servicio, lista_ids:list):
-    lista_asuntos=[]
-    for i in lista_ids:
-        msjes= servicio.users().messages().get(userId='me',id=i,format='full',).execute()
-        cabezales=msjes['payload']['headers']
-        #asunto= [i['value'] for i in cabezales if i["name"]=="Subject"]
-        for i in cabezales:
-            if i['name']=='Subject':
-                lista_asuntos.append(i['value'])
-    print(lista_asuntos)
-
-lista=buscar_emails(servicio)
-mostrar_emails(servicio,lista)'''
