@@ -1,14 +1,18 @@
 import listado, creacion, subida
 
 def validar_opcion() -> int:
-#Pide el ingreso de una opcion y verifica que sea numerica.   
+    '''
+    Pide el ingreso de una opción y verifica que sea numérica.
+    '''
     opcion = input()
     while not opcion.isnumeric():
         opcion = input("Entrada no valida. Debe ingresar un numero: ")
     return int(opcion)
 
 def ejecutar_opcion(opcion: int, salida: bool) -> bool:
-#Recibe una opcion numerica y ejecuta una funcion segun lo elegido.
+    '''
+    Recibe una opción numérica y ejecuta una función según lo elegido.
+    '''
     if opcion == 1:
         listado.main_listado()
     elif opcion == 2:
