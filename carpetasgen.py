@@ -11,6 +11,8 @@ import csv
 
 RUTA=os.getcwd()
 
+SERVICIO_GMAIL = service_gmail.obtener_servicio()
+SERVICIO_DRIVE = service_drive.obtener_servicio()
 
 def generar_carpetas_local(lista_asuntos:list,opcion:int):
     try:
@@ -223,19 +225,15 @@ def crear_carpetas_drive(servicio_drive, lista_asuntos, opciondenombre,listas_cs
 
 def main_carpetas()->None:
 
-    servicio_gmail = service_gmail.obtener_servicio()
-    servicio_drive = service_drive.obtener_servicio()
+    lista_idmsjes = buscar_emails(SERVICIO_GMAIL) #busca los ultimos 5 mensajes
 
+    lista_asuntos = adjuntar_emails(SERVICIO_GMAIL, lista_idmsjes) #adjunta los ultimos 5 mensajes por Asunto en una lista
 
-    lista_idmsjes = buscar_emails(servicio_gmail) #busca los ultimos 5 mensajes
-
-    lista_asuntos = adjuntar_emails(servicio_gmail, lista_idmsjes) #adjunta los ultimos 5 mensajes por Asunto en una lista
-
-    opcion = seleccionar_email(lista_asuntos, servicio_gmail) #el usuario elije cual mensaje
+    opcion = seleccionar_email(lista_asuntos, SERVICIO_GMAIL) #el usuario elije cual mensaje
 
     generar_carpetas_local(lista_asuntos,opcion) #genera las carpetas localmente con el asunto del mail elegido
 
-    nombre_archivo= descargar_archivo(servicio_gmail,lista_idmsjes,opcion) #descarga el archivo adjunto
+    nombre_archivo= descargar_archivo(SERVICIO_GMAIL, lista_idmsjes, opcion) #descarga el archivo adjunto
 
     descomprimir_zip(nombre_archivo) #descomprime el archivo .zip
 
@@ -243,8 +241,4 @@ def main_carpetas()->None:
 
     anidar_carpetas(lista_asuntos,opcion,listas_csv) #anida las carpetas localmente
 
-    crear_carpetas_drive(servicio_drive,lista_asuntos,opcion,listas_csv) #crea y anida las carpetas en el drive
-
-
-
-main_carpetas()
+    crear_carpetas_drive(SERVICIO_DRIVE, lista_asuntos, opcion, listas_csv) #crea y anida las carpetas en el drive
