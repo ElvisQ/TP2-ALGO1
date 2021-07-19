@@ -180,7 +180,7 @@ def listar_remoto(carpeta) -> None:
 
 def ejecutar_listado(espacio: int) -> None:
     '''
-    Recibe una opcion numerica y ejecuta una funcion segun lo elegido.
+    Recibe una opción numérica y ejecuta una función según lo elegido.
     '''
     print("Recopilando...")
     if espacio == 1:
