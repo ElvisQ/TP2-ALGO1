@@ -1,6 +1,8 @@
 import os, time, service_drive
-from typing import Any
+from googleapiclient.discovery import Resource
 import pandas as pd
+
+pd.set_option('max_rows',500)
 
 ESPACIOS = '''\n¿Dónde desea buscar?\n
 1. Archivos en carpeta local.
@@ -29,7 +31,6 @@ def elegir_espacio() -> int:
     '''
     Printea las opciones y pide al usuario que elija una. Luego, la devuelve.
     '''
-    print(ESPACIOS)
     espacio_elegido = input("Elija una opcion: ")
     while not espacio_elegido.isnumeric():
         espacio_elegido = input("Debe ingresar un numero. Elija una opcion: ")
@@ -44,7 +45,7 @@ def listar_subcarpeta_local(subcarpetas: list, ruta_actual: str) -> None:
     indice = validar_subcarpeta(sublistado_num,len(subcarpetas))
     nueva_ruta = os.path.join(ruta_actual,subcarpetas[indice-1])
     listar_local(nueva_ruta)
-    
+
 def navegar_subcarpeta_local(contenido_directorio: list, ruta_actual: str) -> None:
     '''
     Muestra por pantalla las subcarpetas que están contenidas en la carpeta actual. Pregunta al usuario si quiere ver el contenido de las mismas.
@@ -63,7 +64,7 @@ def navegar_subcarpeta_local(contenido_directorio: list, ruta_actual: str) -> No
             respuesta = input("Entrada no válida. ¿Abrir carpeta? (s/n) ")
         if respuesta == "s":
             listar_subcarpeta_local(subcarpetas,ruta_actual)
-   
+
 def listar_local(rutap: str) -> None:
     '''
     Lista los archivos de la carpeta local actual.
@@ -99,7 +100,7 @@ def modificar_fecha(fecha: str) -> str:
     fechadef = "-".join(listadef)
     return fechadef + " " + lista3[0]
 
-def listar_subcarpeta_remota(subcarpetas: list):
+def listar_subcarpeta_remota(subcarpetas: list) -> None:
     '''
     Lista la subcarpeta remota que eligió el usuario.
     '''
@@ -109,8 +110,10 @@ def listar_subcarpeta_remota(subcarpetas: list):
     carpeta = subcarpetas[indicev-1]['id']
     listar_remoto(carpeta)
 
-
-def mostrar_subcarpetas_remota(archivos: list):
+def mostrar_subcarpetas_remota(archivos: list) -> None:
+    '''
+    Itera por los resultados del listado del contenido de la carpeta correspondiente de Drive y muestra las subcarpetas que contiene. 
+    '''
     subcarpetas_r = []
     for i in range(len(archivos)):
         tipo_arch = str(archivos[i]['mimeType'])
@@ -127,18 +130,42 @@ def mostrar_subcarpetas_remota(archivos: list):
         if respuesta == "s":
             listar_subcarpeta_remota(subcarpetas_r)
 
+def proceso_remoto_nativo(servicio: Resource) -> list:
+    '''
+    Lista los archivos de la unidad de Drive del usuario.
+    '''
+    lista_remota = servicio.files().list(fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)').execute()
+    archivos = lista_remota.get('files')
+    nextPageToken = lista_remota.get('nextPageToken')
+    while nextPageToken:
+        lista_remota = servicio.files().list(fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)',pageToken=nextPageToken).execute()
+        archivos.extend(lista_remota.get('files'))
+        nextPageToken = lista_remota.get('nextPageToken')
+    return archivos
+
+def proceso_remoto_custom(servicio: Resource,carpeta: str) -> list:
+    '''
+    Lista los archivos de una carpeta del Drive elegida por el usuario.
+    '''
+    query = f"parents = '{carpeta}'"
+    lista_remota = servicio.files().list(q=query,fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)').execute()
+    archivos = lista_remota.get('files')
+    nextPageToken = lista_remota.get('nextPageToken')
+    while nextPageToken:
+        lista_remota = servicio.files().list(q=query,fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)',pageToken=nextPageToken).execute()
+        archivos.extend(lista_remota.get('files'))
+        nextPageToken = lista_remota.get('nextPageToken')
+    return archivos
+
 def listar_remoto(carpeta) -> None:
     '''
-    Lista los archivos de la carpeta remota actual.
+    Lista los archivos del drive del usario y da la opción de listar subcarpetas.
     '''
     servicio = service_drive.obtener_servicio()
     if isinstance(carpeta,int):
-        lista_remota = servicio.files().list(fields='files(id,mimeType,name,modifiedTime,parents)').execute()
+        archivos = proceso_remoto_nativo(servicio)
     else:
-        query = f"parents = '{carpeta}'"
-        lista_remota = servicio.files().list(q=query,fields='files(id,mimeType,name,modifiedTime,parents)').execute()
-    archivos = lista_remota['files']
-    pd.set_option('max_rows',len(archivos))
+        archivos = proceso_remoto_custom(servicio,carpeta)
     nombres_d = []
     tipo_d = []
     ult_modif_d = []
@@ -155,6 +182,7 @@ def ejecutar_listado(espacio: int) -> None:
     '''
     Recibe una opcion numerica y ejecuta una funcion segun lo elegido.
     '''
+    print("Recopilando...")
     if espacio == 1:
         listar_local(RUTA_TRABAJO)
     elif espacio == 2:
@@ -166,5 +194,6 @@ def ejecutar_listado(espacio: int) -> None:
         ejecutar_listado(espacio_elegido)
 
 def main_listado() -> None:
+    print(ESPACIOS)
     espacio_elegido = elegir_espacio()
     ejecutar_listado(espacio_elegido)
