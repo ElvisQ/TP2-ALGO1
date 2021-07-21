@@ -163,15 +163,7 @@ def seleccionar_email(lista_asuntos:list, servicio):
 def anidar_carpetas(lista_asuntos, opcion, lista_csv):
     carpeta_de_parcial= lista_asuntos[(opcion) - 1]
     direccion_evaluacion= os.path.join(RUTA,carpeta_de_parcial)
-    lista_alumnos=lista_csv[0]
-    lista_docentes=lista_csv[1]
     doc_alumno=lista_csv[2]
-    print(doc_alumno)
-    print(type(doc_alumno))
-    lista_paths=[]
-    '''for docente in lista_docentes:
-        dir=os.path.join(direccion_evaluacion, docente)
-        os.mkdir(dir)'''
 
     for docente in doc_alumno:
         for lista in range(len(doc_alumno[docente])):
@@ -181,11 +173,11 @@ def anidar_carpetas(lista_asuntos, opcion, lista_csv):
             os.makedirs(direccion2)
 
 
-def crear_carpetas_drive(servicio_drive, lista_asuntos, opciondenombre,listas_csv):
+def crear_carpetas_drive(servicio_drive, lista_asuntos, opciondenombre ,listas_csv):
     print('\nCreando carpetas en Google Drive...\n')
     docente_alumno=listas_csv[2] #docente:[alumnos]
 
-    nombre_carpeta= lista_asuntos[opciondenombre]
+    nombre_carpeta= lista_asuntos[(opciondenombre)-1]
 
     file_metadata = {
         'name': nombre_carpeta,
@@ -219,7 +211,7 @@ def crear_carpetas_drive(servicio_drive, lista_asuntos, opciondenombre,listas_cs
                 'mimeType':'application/vnd.google-apps.folder',
                 'parents': [id_carpeta]
             }
-            carpeta=servicio_drive.files().create(body=file_metadata).execute()
+            servicio_drive.files().create(body=file_metadata).execute()
 
 
 
