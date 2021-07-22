@@ -9,7 +9,7 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 import io
 
 RUTA = os.getcwd()
-SERIVICO_GMAIL = service_gmail.obtener_servicio()
+SERVICIO_GMAIL = service_gmail.obtener_servicio()
 SERVICIO_DRIVE = service_drive.obtener_servicio()
 TIPOS_A_EXPORTAR = {'application/vnd.google-apps.presentation':'application/vnd.oasis.opendocument.presentation',
                     'application/vnd.google-apps.document':'application/pdf',
@@ -42,7 +42,7 @@ def enlistar_carpetas_drive(servicio_drive) -> dict:
 
 def buscar_hora_modificacion(archivo: str,direccioncarpeta:str):
     '''
-    PRE: Recibe el nombre del archivo a obtener fecha de modificacion
+    PRE: Recibe el nombre del archivo a obtener fecha de modificacion y la ruta
     POST: Retorna la fecha de ultima modificacion del archivo
     '''
 
@@ -144,7 +144,7 @@ def actualizar_archivo_en_drive(archivo_nombre: str, servicio, ruta_archivo:str)
     servicio.files().create(body=file_metadata, media_body=contenido, fields='id').execute()
     print(f'archivo{archivo_nombre} actualizado\n')
 
-def descargar_archivos(nombre_de_archivo, servicio, ruta_archivo,tipo_archivo):
+def descargar_archivos(nombre_de_archivo:str, servicio, ruta_archivo,tipo_archivo:str):
     '''
     PRE:Recibe el nombre del archivo el servicio de drive la ruta del archivo y su MimeType
     POST:Descarga el archivo de drive a la ruta especificada
@@ -171,7 +171,7 @@ def descargar_archivos(nombre_de_archivo, servicio, ruta_archivo,tipo_archivo):
 def listar_archivos_drive(servicio, carpetasdict, nombre_carpeta):
     '''
     PRE: Recibe el servicio de drive, el diccionario con keys com los nombres de las carpetas en drive
-         y como valores sus respectivos Id's
+         y como valores sus respectivos Id's, y el nombre de la carpeta a listar los archivos
     POST:Retorna un diccionario con el nombre del archivo como key y la fecha de modificacion como valor
     '''
     lista_archivos_modificacion = {}
@@ -190,7 +190,7 @@ def listar_archivos_drive(servicio, carpetasdict, nombre_carpeta):
 def comparar_modificaciones(direccion_carpeta: str, carpeta_id_drive: dict, servicio, lista_archivos_alumnos):
     '''
     PRE:Recibe la direccion de la carpeta local, el diccionario con las carpetas como clave y los id's como valor
-        el servicio de drive y la lista de los archivos dentro de la carpeta alumnos
+        el servicio de drive y la lista de los archivos dentro de la carpeta del alumno
     POST:
     '''
     iterdir= list(lista_archivos_alumnos)

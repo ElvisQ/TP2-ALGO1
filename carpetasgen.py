@@ -94,11 +94,12 @@ def descomprimir_zip(archivo:str):
     nombre, extension= os.path.splitext(archivo)
     if extension!='.zip':
         print(f'El archivo {nombre} no es un un archivo zip')
-        main_carpetas()
+        return False
     else:
         archivozip= zipfile.ZipFile(archivo)
         archivozip.extractall()
         archivozip.close()
+        return True
 
 
 def enlistar_doc_alum()->list:
@@ -262,6 +263,7 @@ def crear_carpetas_drive(servicio_drive, lista_asuntos:list, opciondenombre:int 
 
 def main_carpetas()->None:
     error= False
+
     while not error:
         lista_idmsjes = buscar_emails(SERVICIO_GMAIL) #busca los ultimos 5 mensajes
 
@@ -274,12 +276,12 @@ def main_carpetas()->None:
 
             nombre_archivo= descargar_archivo(SERVICIO_GMAIL, lista_idmsjes, opcion) #descarga el archivo adjunto
 
-            descomprimir_zip(nombre_archivo) #descomprime el archivo .zip
+            descomprimir=descomprimir_zip(nombre_archivo) #descomprime el archivo .zip
+            if descomprimir==True:
+                listas_csv=enlistar_doc_alum() #enlista la relacion docente alumno segun losr archivos csv
 
-            listas_csv=enlistar_doc_alum() #enlista la relacion docente alumno segun losr archivos csv
+                anidar_carpetas(lista_asuntos,opcion,listas_csv) #anida las carpetas localmente
 
-            anidar_carpetas(lista_asuntos,opcion,listas_csv) #anida las carpetas localmente
+                crear_carpetas_drive(SERVICIO_DRIVE, lista_asuntos, opcion, listas_csv) #crea y anida las carpetas en el drive
 
-            crear_carpetas_drive(SERVICIO_DRIVE, lista_asuntos, opcion, listas_csv) #crea y anida las carpetas en el drive
-
-            error= True
+                error= True
