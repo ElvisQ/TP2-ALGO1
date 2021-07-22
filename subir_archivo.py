@@ -1,22 +1,37 @@
 import os
-from pydrive2.auth import GoogleAuth
+import service_drive
+from apiclient.http import MediaFileUpload
 from pydrive2.drive import GoogleDrive
 
-GAUTH = GoogleAuth()
-GAUTH.LocalWebserverAuth()
-DRIVE = GoogleDrive(GAUTH)
+DRIVE = service_drive.obtener_servicio()
 
-
-def subir_archivo(ruta_archivo:list, id_carpeta:str)-> None: 
-    """
-    Sube los archivos a drive
-    """
-    
+def subir(ruta_archivo:list, id_carpeta:str, mimetype:str)-> None:
     for archivos in ruta_archivo:
-        archivo = DRIVE.CreateFile({'parents': [{'id': id_carpeta}]})
-        archivo.SetContentFile(archivos)
-        archivo.Upload()
-   
+        file_metadata = {'name': archivos, 'parents': [id_carpeta]}
+        media = MediaFileUpload(archivos, mimetype=mimetype)
+        file = DRIVE.files().create(body=file_metadata,
+                                    media_body=media,
+                                    fields='id').execute()
+
+def tipos_archivos()-> str:
+    tipo = ['text/plain', 'text/csv', 'application/json', 'application/zip','application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    print("---------Ingrese que tipo de archivo desea---------")
+    print("1. .txt")
+    print("2. .csv")
+    print("3. .json")
+    print("4. .zip")
+    print("5. .pdf")
+    print("6. .docx")
+    opcion = input("Ingrese una opción: ")
+    while not (opcion.isnumeric()):
+        opcion = input("Error! Ingrese una opción válida: ")
+    opcion = int(opcion)
+    opciones = opcion - 1
+    tipo_archivo = tipo[opciones]
+    return tipo_archivo
+    
+
 def parametros()-> tuple: 
     """
     Le pedirá al usuario los datos correspondientes para subir el archivo
@@ -41,6 +56,7 @@ def parametros()-> tuple:
 
 
 def archivo_subido()-> None:
+    mimetype = tipos_archivos()
     ruta_archivo, id_carpeta = parametros()
-    subir_archivo(ruta_archivo, id_carpeta)
-archivo_subido()
+    subir(ruta_archivo, id_carpeta, mimetype)
+
