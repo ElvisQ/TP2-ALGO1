@@ -2,7 +2,6 @@ import os
 import service_drive
 import subir_archivo 
 
-DRIVE = service_drive.obtener_servicio()
 
 def validar_existencia(nombre_archivo:str)-> str:
     """
@@ -38,6 +37,7 @@ def parametros_archivo()-> tuple:
     id_carpeta = input("Ingrese el ID de su carpeta: ")
     return archivo, id_carpeta, mimetype
 
+#main del programa
 def crear()-> None:
     nombre_archivo, id_carpeta, mimetype = parametros_archivo()
 
