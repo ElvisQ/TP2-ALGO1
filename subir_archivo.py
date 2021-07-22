@@ -6,6 +6,9 @@ from pydrive2.drive import GoogleDrive
 DRIVE = service_drive.obtener_servicio()
 
 def subir(ruta_archivo:list, id_carpeta:str, mimetype:str)-> None:
+    """
+    Sube los archivos a Drive.
+    """
     for archivos in ruta_archivo:
         file_metadata = {'name': archivos, 'parents': [id_carpeta]}
         media = MediaFileUpload(archivos, mimetype=mimetype)
@@ -13,7 +16,10 @@ def subir(ruta_archivo:list, id_carpeta:str, mimetype:str)-> None:
                                     media_body=media,
                                     fields='id').execute()
 
-def tipos_archivos()-> str:
+def tipos_archivos()->str:
+    """
+    Le pregunta al usuario que tipo de archivo desea manejar.
+    """
     tipo = ['text/plain', 'text/csv', 'application/json', 'application/zip','application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
     print("---------Ingrese que tipo de archivo desea---------")
@@ -34,7 +40,7 @@ def tipos_archivos()-> str:
 
 def parametros()-> tuple: 
     """
-    Le pedirá al usuario los datos correspondientes para subir el archivo
+    Le pedirá al usuario los datos correspondientes para subir el archivo.
     """
     ruta_archivo = []
 
@@ -54,9 +60,8 @@ def parametros()-> tuple:
 
     return ruta_archivo, id_carpeta
 
-
+#main del programa
 def archivo_subido()-> None:
     mimetype = tipos_archivos()
     ruta_archivo, id_carpeta = parametros()
     subir(ruta_archivo, id_carpeta, mimetype)
-
