@@ -1,20 +1,10 @@
 import os
-from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive
+import service_drive
+import subir_archivo 
 
-GAUTH = GoogleAuth()
-GAUTH.LocalWebserverAuth()
-DRIVE = GoogleDrive(GAUTH) 
+DRIVE = service_drive.obtener_servicio()
 
-def crear_archivo_drive (nombre_archivo: str, id_carpeta:str)-> None:
-    """
-    Crea los archivos en drive
-    """
-
-    archivo = DRIVE.CreateFile({'title': nombre_archivo, 'parents': [{'kind': 'drive#linkArchivo', 'id': id_carpeta}]} )
-    archivo.Upload()
- 
-def validar_existencia(nombre_archivo:str)->str:
+def validar_existencia(nombre_archivo:str)-> str:
     """
     Verifica que no exista un archivo con el mismo nombre, en caso de que exista, 
     devolverá el nuevo nombre del archivo.
@@ -28,15 +18,16 @@ def parametros_archivo()-> tuple:
     """
     Le pide al usuario los datos necesarios para crear el archivo
     """
+    archivo = []
 
-    nombre_archivo = input("Ingrese el nombre del archivo: ")
+    mimetype = subir_archivo.tipos_archivos()
 
-    extension = input("Ingrese la extension (incluyendo el '.'): ")
+    nombre_archivo = input("Ingrese el nombre del archivo incluyendo la extension '.': ")
 
-    nombre_completo = nombre_archivo + extension
-
-    nombre_completo = validar_existencia(nombre_completo)
+    nombre_archivo = validar_existencia(nombre_archivo)
     
+    archivo.append(nombre_archivo)
+
     print("Se le pedirá que ingrese el 'id' de la carpeta, para hacerlo copie desde el url")
     opcion = input("¿Desea ver un ejemplo? <s/n>: ")
 
@@ -45,10 +36,13 @@ def parametros_archivo()-> tuple:
         print("La ID de su carpeta será 108lNDFnBijidpS1mooGsk8s6fr4V76pS")
 
     id_carpeta = input("Ingrese el ID de su carpeta: ")
-    return nombre_completo, id_carpeta
+    return archivo, id_carpeta, mimetype
 
 def crear()-> None:
-    nombre_archivo, id_carpeta = parametros_archivo()
-    nuevo_archivo = open(nombre_archivo, 'a') #Crea los archivos en remoto
-    crear_archivo_drive(nombre_archivo, id_carpeta)
-crear()
+    nombre_archivo, id_carpeta, mimetype = parametros_archivo()
+
+    archivo = nombre_archivo[0]
+
+    nuevo_archivo = open(archivo, 'a') #Crea los archivos en remoto
+
+    subir_archivo.subir(nombre_archivo, id_carpeta, mimetype)
