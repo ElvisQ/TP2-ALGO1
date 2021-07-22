@@ -1,7 +1,6 @@
 import opciones
-import service_drive
 
-MENU = '''Elija una de las siguientes opciones:
+MENU = '''\nElija una de las siguientes opciones:\n
 1. Listar archivos de la carpeta actual.
 2. Crear un archivo.
 3. Subir un archivo.
@@ -13,7 +12,7 @@ MENU = '''Elija una de las siguientes opciones:
 '''
 
 def main():
-    service_drive.obtener_servicio()
+
     salida = False
     while not salida:
         print(MENU)
@@ -21,3 +20,5 @@ def main():
         salida = opciones.ejecutar_opcion(opcion,salida)
 
 main()
+
+
