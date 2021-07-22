@@ -1,7 +1,7 @@
 import os
 import service_drive
 from apiclient.http import MediaFileUpload
-from pydrive2.drive import GoogleDrive
+
 
 DRIVE = service_drive.obtener_servicio()
 
