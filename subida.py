@@ -1,8 +1,7 @@
 import os
 import service_drive
 from apiclient.http import MediaFileUpload
-
-DRIVE = service_drive.obtener_servicio()
+from auxiliar import SERV_DR
 
 def subir(ruta_archivo:list, id_carpeta:str, mimetype:str)-> None:
     """
@@ -11,7 +10,7 @@ def subir(ruta_archivo:list, id_carpeta:str, mimetype:str)-> None:
     for archivos in ruta_archivo:
         file_metadata = {'name': archivos, 'parents': [id_carpeta]}
         media = MediaFileUpload(archivos, mimetype=mimetype)
-        file = DRIVE.files().create(body=file_metadata,
+        file = SERV_DR.files().create(body=file_metadata,
                                     media_body=media,
                                     fields='id').execute()
 
