@@ -1,54 +1,50 @@
-import os, time, service_drive
-from googleapiclient.discovery import Resource
+import os, time
 import pandas as pd
-
-pd.set_option('max_rows',500)
+from auxiliar import SERV_DR, RUTA
 
 ESPACIOS = '''\n¿Dónde desea buscar?\n
 1. Archivos en carpeta local.
 2. Archivos en carpeta remota.
 '''
-RUTA_TRABAJO = os.getcwd()
 
-def validar_entero(entrada: str) -> int:
+def validar_entrada(entrada: any, limite_inf: int, limite_sup: int) -> int:
     '''
-    Recibe un string. Si es numérico lo devuelve como integer, caso contrario le pide al usuario volver a ingresar.
-    '''    
+    PRE: Recibe una entrada y dos límites en los cuales debe estar contenida la entrada
+    POST: Verifica que sea numérico y que esté dentro de los límites especificados, caso contrario le pide al usuario volver a ingresar hasta que se cumpla la condición. Si todo es correcto, se devuelve la entrada como int.
+    '''
     while not entrada.isnumeric():
         entrada = input("Entrada no válida. Debe ingresar un número: ")
-    return int(entrada)
-
-def validar_subcarpeta(indice: int, cantidad_subcarpetas: int) -> int:
-    '''
-    Recibe el índice de subcarpeta elegido. Si no existe, pide al usuario reingresarlo.
-    '''
-    while indice <= 0 or indice >= cantidad_subcarpetas+1:
-        indice = input("No existe esa carpeta. Ingrese otro índice: ")
-        indice = validar_entero(indice)
-    return int(indice)
-
-def elegir_espacio() -> int:
-    '''
-    Printea las opciones y pide al usuario que elija una. Luego, la devuelve.
-    '''
-    espacio_elegido = input("Elija una opcion: ")
-    while not espacio_elegido.isnumeric():
-        espacio_elegido = input("Debe ingresar un numero. Elija una opcion: ")
-    return int(espacio_elegido)
+    entrada = int(entrada)
+    while entrada <= limite_inf or entrada >= limite_sup+1:
+        entrada = input("No existe esa opción. Ingrese otro índice: ")
+        while not entrada.isnumeric():
+             entrada = input("Entrada no válida. Debe ingresar un número: ")
+             entrada = int(entrada)
+    return entrada
 
 def listar_subcarpeta_local(subcarpetas: list, ruta_actual: str) -> None:
     '''
-    Lista la subcarpeta local que eligió el usuario.
+    PRE: Recibe al directorio actual y a una lista de subcarpetas contenidas en él.
+    POST: Lista la subcarpeta local que eligió el usuario.
     '''
     sublistado = input("¿Qué carpeta desea abrir? ")
-    sublistado_num = validar_entero(sublistado)
-    indice = validar_subcarpeta(sublistado_num,len(subcarpetas))
+    indice = validar_entrada(sublistado,0,len(subcarpetas))
     nueva_ruta = os.path.join(ruta_actual,subcarpetas[indice-1])
     listar_local(nueva_ruta)
 
+def abrir_subcarpeta() -> str:
+    '''
+    POST: Pide al usuario una respuesta de sí/no y verifica que sea válida. Si es así, la devuelve.
+    '''
+    respuesta = input("\n¿Desea abrir alguna carpeta? (s/n) ")
+    while respuesta != "s" and respuesta != "n":
+        respuesta = input("Entrada no válida. ¿Abrir carpeta? (s/n) ")
+    return respuesta
+
 def navegar_subcarpeta_local(contenido_directorio: list, ruta_actual: str) -> None:
     '''
-    Muestra por pantalla las subcarpetas que están contenidas en la carpeta actual. Pregunta al usuario si quiere ver el contenido de las mismas.
+    PRE: Recibe el directorio actual y su contenido.
+    POST: Muestra por pantalla las subcarpetas que están contenidas en la carpeta actual. Pregunta al usuario si quiere ver el contenido de las mismas.
     '''
     subcarpetas = []
     for i in range(len(contenido_directorio)):
@@ -59,15 +55,14 @@ def navegar_subcarpeta_local(contenido_directorio: list, ruta_actual: str) -> No
         print("\nSubcarpetas en",ruta_actual,"\n")
         for j in range(len(subcarpetas)):
             print(j+1,subcarpetas[j])
-        respuesta = input("\n¿Desea abrir alguna carpeta? (s/n) ")
-        while respuesta != "s" and respuesta != "n":
-            respuesta = input("Entrada no válida. ¿Abrir carpeta? (s/n) ")
+        respuesta = abrir_subcarpeta()
         if respuesta == "s":
             listar_subcarpeta_local(subcarpetas,ruta_actual)
 
 def listar_local(rutap: str) -> None:
     '''
-    Lista los archivos de la carpeta local actual.
+    PRE: Recibe una ruta del entorno local del usuario
+    POST: Lista los archivos del directorio. Luego procede con las subcarpetas
     '''
     contenido = os.listdir(rutap)  
     ult_modif = []
@@ -89,7 +84,8 @@ def listar_local(rutap: str) -> None:
     
 def modificar_fecha(fecha: str) -> str:
     '''
-    Modifica el formato de la fecha de última modificación de un archivo de Drive.
+    PRE: Recibe las fechas de última modificación de los archivos remotos.
+    POST: Modifica el formato y lo devuelve.
     '''
     lista = fecha.split('-')
     fecha2 = lista[2]
@@ -102,17 +98,18 @@ def modificar_fecha(fecha: str) -> str:
 
 def listar_subcarpeta_remota(subcarpetas: list) -> None:
     '''
-    Lista la subcarpeta remota que eligió el usuario.
+    PRE: Si el usuario especificó que sí quería listar una subcarpeta, esta función recibe una lista con las subcarpetas contenidas en la carpeta listada última. 
+    POST: Pregunta al usuario cuál quiere listar. Luego reinicia el proceso de listado pero dentro de esa subcarpeta.
     '''
     indice = input("¿Qué carpeta desea abrir? ")
-    indicec = validar_entero(indice)
-    indicev = validar_subcarpeta(indicec,len(subcarpetas))
-    carpeta = subcarpetas[indicev-1]['id']
+    indicec = validar_entrada(indice,0,len(subcarpetas))
+    carpeta = subcarpetas[indicec-1]['id']
     listar_remoto(carpeta)
 
 def mostrar_subcarpetas_remota(archivos: list) -> None:
     '''
-    Itera por los resultados del listado del contenido de la carpeta correspondiente de Drive y muestra las subcarpetas que contiene. 
+    PRE: Recibe los archivos que se recopilaron en el último listado.
+    POST: Busca y muestra las subcarpetas contenidas en la carpeta correspondiente de Drive. Luego pregunta si quiere listar alguna de las subcarpetas.
     '''
     subcarpetas_r = []
     for i in range(len(archivos)):
@@ -124,15 +121,14 @@ def mostrar_subcarpetas_remota(archivos: list) -> None:
         print("\nSubcarpetas en directorio actual:\n")
         for car in range(len(subcarpetas_r)):
             print(car+1,subcarpetas_r[car]['name'])
-        respuesta = input("\n¿Desea abrir alguna carpeta? (s/n) ")
-        while respuesta != "s" and respuesta != "n":
-            respuesta = input("Entrada no válida. ¿Abrir carpeta? (s/n) ")
+        respuesta = abrir_subcarpeta()
         if respuesta == "s":
             listar_subcarpeta_remota(subcarpetas_r)
 
-def proceso_remoto_nativo(servicio: Resource) -> list:
+def proceso_remoto_nativo(servicio: any) -> list:
     '''
-    Lista los archivos de la unidad de Drive del usuario.
+    PRE: Recibe el service de Drive para las funciones específicas.
+    POST: Recopila los archivos de la unidad de Drive del usuario y los devuelve en una lista.
     '''
     lista_remota = servicio.files().list(fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)').execute()
     archivos = lista_remota.get('files')
@@ -143,9 +139,10 @@ def proceso_remoto_nativo(servicio: Resource) -> list:
         nextPageToken = lista_remota.get('nextPageToken')
     return archivos
 
-def proceso_remoto_custom(servicio: Resource,carpeta: str) -> list:
+def proceso_remoto_custom(servicio: any, carpeta: str) -> list:
     '''
-    Lista los archivos de una carpeta del Drive elegida por el usuario.
+    PRE: Recibe el service de Drive para las funciones específicas y la carpeta que el usuario quiere listar.
+    POST: Recopila los archivos de la carpeta del Drive elegida por el usuario y los devuelve en una lista.
     '''
     query = f"parents = '{carpeta}'"
     lista_remota = servicio.files().list(q=query,fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)').execute()
@@ -157,15 +154,15 @@ def proceso_remoto_custom(servicio: Resource,carpeta: str) -> list:
         nextPageToken = lista_remota.get('nextPageToken')
     return archivos
 
-def listar_remoto(carpeta) -> None:
+def listar_remoto(carpeta: any) -> None:
     '''
-    Lista los archivos del drive del usario y da la opción de listar subcarpetas.
+    PRE: Recibe una carpta de Drive que el usuario quiere listar. Por default es 0.
+    POST: Lista los archivos de la carpeta del usario y da la opción de listar subcarpetas. La carpeta default ("0") es el MyDrive del usuario.
     '''
-    servicio = service_drive.obtener_servicio()
     if isinstance(carpeta,int):
-        archivos = proceso_remoto_nativo(servicio)
+        archivos = proceso_remoto_nativo(SERV_DR)
     else:
-        archivos = proceso_remoto_custom(servicio,carpeta)
+        archivos = proceso_remoto_custom(SERV_DR,carpeta)
     nombres_d = []
     tipo_d = []
     ult_modif_d = []
@@ -180,11 +177,12 @@ def listar_remoto(carpeta) -> None:
 
 def ejecutar_listado(espacio: int) -> None:
     '''
-    Recibe una opción numérica y ejecuta una función según lo elegido.
+    PRE: Recibe el espacio ("local" o "remoto") como opción numérica que eligió el usuario.
+    POST: ejecuta las funciones que listan el contenido del espacio elegido.
     '''
     print("Recopilando...")
     if espacio == 1:
-        listar_local(RUTA_TRABAJO)
+        listar_local(RUTA)
     elif espacio == 2:
         carpeta = 0
         listar_remoto(carpeta)
@@ -195,6 +193,7 @@ def ejecutar_listado(espacio: int) -> None:
 
 def main_listado() -> None:
     print(ESPACIOS)
-    espacio_elegido = elegir_espacio()
+    espacio_elegido = input()
+    espacio_elegido = validar_entrada(espacio_elegido,0,2)
     ejecutar_listado(espacio_elegido)
 
