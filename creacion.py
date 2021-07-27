@@ -1,6 +1,5 @@
-import os
-import service_drive
-import subir_archivo 
+import os, subida
+from auxiliar import SERV_DR
 
 
 def validar_existencia(nombre_archivo:str)->str:
@@ -19,7 +18,7 @@ def parametros_archivo()-> tuple:
     """
     archivo = []
 
-    mimetype = subir_archivo.tipos_archivos()
+    mimetype = subida.tipos_archivos()
 
     nombre_archivo = input("Ingrese el nombre del archivo incluyendo la extension '.': ")
 
@@ -45,4 +44,4 @@ def crear()-> None:
 
     nuevo_archivo = open(archivo, 'a') #Crea los archivos en remoto
 
-    subir_archivo.subir(nombre_archivo, id_carpeta, mimetype)
+    subida.subir(nombre_archivo, id_carpeta, mimetype)
