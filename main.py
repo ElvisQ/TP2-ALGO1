@@ -13,7 +13,7 @@ MENU = '''\nElija una de las siguientes opciones:\n
 
 def validar_opcion() -> int:
     '''
-    Pide el ingreso de una opción y verifica que sea numérica.
+    POST: Pide el ingreso de una opción y verifica que sea numérica.
     '''
     opcion = input()
     while not opcion.isnumeric():
@@ -22,7 +22,8 @@ def validar_opcion() -> int:
 
 def ejecutar_opcion(opcion: int, salida: bool) -> bool:
     '''
-    Recibe una opción numérica y ejecuta una función según lo elegido.
+    PRE: Recibe una opción numérica ingresada por el usuario y la condición de salida como False.
+    POST: Ejecuta una función según lo elegido. Si elige la 8, la condición de salida se vuelve True, por ende termina el programa.
     '''
     if opcion == 1:
         listado.main_listado()
@@ -50,9 +51,7 @@ def main():
     salida = False
     while not salida:
         print(MENU)
-        opcion = validar_opcion()
-        salida = ejecutar_opcion(opcion,salida)
+        opcion = opciones.validar_opcion()
+        salida = opciones.ejecutar_opcion(opcion,salida)
 
 main()
-
-
