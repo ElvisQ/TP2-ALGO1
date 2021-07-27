@@ -51,7 +51,7 @@ def main():
     salida = False
     while not salida:
         print(MENU)
-        opcion = opciones.validar_opcion()
-        salida = opciones.ejecutar_opcion(opcion,salida)
+        opcion = validar_opcion()
+        salida = ejecutar_opcion(opcion,salida)
 
 main()

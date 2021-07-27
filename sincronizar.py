@@ -1,9 +1,10 @@
 import mimetypes, os, time, datetime, io
 from pathlib import Path
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-from auxiliar import RUTA, SERV_DR, SERV_GM, EXPORT
+from auxiliar import RUTA, SERV_DR, EXPORT
 
-def enlistar_carpetas_drive(servicio_drive) -> dict:
+
+def enlistar_carpetas_drive(servicio_drive:any) -> dict:
     '''
     PRE: recibe el servicio de drive
     POST: retorna un diccionario con keys igual a los nombres de las carpetas en drive
@@ -22,7 +23,7 @@ def enlistar_carpetas_drive(servicio_drive) -> dict:
     return nombre_carpeta_id
 
 
-def buscar_hora_modificacion(archivo: str,direccioncarpeta:str):
+def buscar_hora_modificacion(archivo: str,direccioncarpeta:str)->any:
     '''
     PRE: Recibe el nombre del archivo a obtener fecha de modificacion y la ruta
     POST: Retorna la fecha de ultima modificacion del archivo
@@ -38,7 +39,7 @@ def buscar_hora_modificacion(archivo: str,direccioncarpeta:str):
     return fecha
 
 
-def cambiar_formato_mod_drive(carpeta, archivo, servicio,carpetaiddrive):
+def cambiar_formato_mod_drive(carpeta:str, archivo:str, servicio:any,carpetaiddrive:dict)->any:
     '''
     PRE: Recibe el nombre de la carpeta y  archivo , el servicio de drive y el diccionario "carpeta:id"
     POST: Retorna el horario pero en horario local
@@ -67,7 +68,7 @@ def cambiar_formato_mod_drive(carpeta, archivo, servicio,carpetaiddrive):
     return utc_a_local
 
 
-def buscar_id_archivo(nombre_archivo, servicio):
+def buscar_id_archivo(nombre_archivo:str, servicio:any)->str:
     '''
     PRE:Recibe el nombre del archivo y el servicio de drive
     POST:Retotrna el Id del archivo
@@ -80,7 +81,7 @@ def buscar_id_archivo(nombre_archivo, servicio):
     return id
 
 
-def buscar_id_carpeta(nombre: str, servicio):
+def buscar_id_carpeta(nombre: str, servicio:any)->str:
     '''
     PRE:Recibe el nombre de la carpeta y el servicio de drive
     POST:Retorna el Id de la carpeta
@@ -94,7 +95,7 @@ def buscar_id_carpeta(nombre: str, servicio):
     return id
 
 
-def obtenermime(servicio, archivo):
+def obtenermime(servicio:any, archivo:str)->str:
     '''
     PRE:Recibe el servicio de drive junto con el nombre del archivo
     POST: Retorna el MimeType del archivo en drive
@@ -107,7 +108,7 @@ def obtenermime(servicio, archivo):
     return mime
 
 
-def actualizar_archivo_en_drive(archivo_nombre: str, servicio, ruta_archivo:str):
+def actualizar_archivo_en_drive(archivo_nombre: str, servicio:any, ruta_archivo:str)->None:
     '''
     PRE: Recibe el nombre del archivo, el servicio de drive y la ruta completa del archivo
     POST:Sube a Drive el archivo en su respectiva carpeta
@@ -126,7 +127,7 @@ def actualizar_archivo_en_drive(archivo_nombre: str, servicio, ruta_archivo:str)
     servicio.files().create(body=file_metadata, media_body=contenido, fields='id').execute()
     print(f'archivo{archivo_nombre} actualizado\n')
 
-def descargar_archivos(nombre_de_archivo:str, servicio, ruta_archivo,tipo_archivo:str):
+def descargar_archivos(nombre_de_archivo:str, servicio:any, ruta_archivo,tipo_archivo:str)->None:
     '''
     PRE:Recibe el nombre del archivo el servicio de drive la ruta del archivo y su MimeType
     POST:Descarga el archivo de drive a la ruta especificada
@@ -150,7 +151,7 @@ def descargar_archivos(nombre_de_archivo:str, servicio, ruta_archivo,tipo_archiv
         file.close()
 
 
-def listar_archivos_drive(servicio, carpetasdict, nombre_carpeta):
+def listar_archivos_drive(servicio:any, carpetasdict:dict, nombre_carpeta:str)->dict:
     '''
     PRE: Recibe el servicio de drive, el diccionario con keys com los nombres de las carpetas en drive
          y como valores sus respectivos Id's, y el nombre de la carpeta a listar los archivos
@@ -168,8 +169,66 @@ def listar_archivos_drive(servicio, carpetasdict, nombre_carpeta):
         lista_archivos_modificacion[file['name']] = file['modifiedTime']
     return lista_archivos_modificacion
 
+def comparar_fecha_modificacion(lista_archivos_coincidentes:list, lista_ruta_archivos:list, dir_carpeta:str,carpetas_ids_drive:dict,servicio:any,archivos_act_local:list,archivos_act_drive:list)->None:
+    '''
+    PRE:recibe la lista de archivos coincidentes, la lista de las rutas de los archivos en cuestion, el directorio de la carpeta, el diccionario 'carpeta:id', el servicio de drive, y las dos listas de los archivos actualizados, local y remoto.
+    POST: segun la feecha de modificaion de los archivos se actualizara o en local o en remoto
+    '''
+    carpeta_del_archivo=dir_carpeta.split('\\')
+    for archivo in lista_archivos_coincidentes:
+        # como el archivo coincide en ambos lugares debo verificar cual fue modificado mas recientemente
+        modificacion_de_archivo_local = buscar_hora_modificacion(archivo, dir_carpeta)  # ->datetime
 
-def comparar_modificaciones(direccion_carpeta: str, carpeta_id_drive: dict, servicio, lista_archivos_alumnos):
+        modificacion_de_archivo_remoto = cambiar_formato_mod_drive(carpeta_del_archivo[-1], archivo, servicio,
+                                                                   carpetas_ids_drive)  # datetime
+
+        if modificacion_de_archivo_local > modificacion_de_archivo_remoto:
+            # significa que esa carpeta en local fue modificada mas recietemente que en remota, por lo tanto esta desactualizada en drive
+            for ruta_archivo in lista_ruta_archivos:
+                ruta_archivo.split('\\')
+                if ruta_archivo[-1] == archivo:
+                    actualizar_archivo_en_drive(archivo, servicio, ruta_archivo)
+                    archivos_act_drive.append(archivo)
+
+        elif modificacion_de_archivo_local < modificacion_de_archivo_remoto:
+            # significa que esa carpeta en remota fue modificada recientemente que en local, por lo tanto esta desactualizada en local
+            mime = obtenermime(servicio, archivo)
+            for ruta_archivo in lista_ruta_archivos:
+                ruta_archivo.split('\\')
+                if ruta_archivo[-1] == archivo:
+                    descargar_archivos(archivo, servicio, ruta_archivo, mime)
+                    archivos_act_local.append(archivo)
+
+
+def recorrer_archivos_faltantes_drive(lista_faltantes_drive:list,archivos_actualizados_drive:list,lista_rutas_archivos:list,servicio:any)->None:
+    '''
+    PRE:recibe la lista de archivos faltantes en drive, la list ade archivos ya actualizados en drive, las lista de rutas del o los archivos y el servicio de Drive
+    POST:Recorre la lista de los archivos en local y los actualiza en drive
+    '''
+    for file in lista_faltantes_drive:
+        if file not in archivos_actualizados_drive:
+            for ruta_archivo in lista_rutas_archivos:
+                lista = ruta_archivo.split("\\")
+                pathfile = lista[-1]
+                if pathfile == file:
+                    actualizar_archivo_en_drive(file, servicio, ruta_archivo)
+                    archivos_actualizados_drive.append(file)
+
+
+def recorrer_archivos_faltantes_local(lista_archivos_faltantes_local:list,archivos_actualizados_local:list,lista_ruta_archivos:list,direccion_carpeta:any,servicio:any)->None:
+    '''
+    PRE: Recibe la lista de archivos faltantes en local, la lista de los archivvos ya actualizados en local,la lista de las rutas de los archivos , la direccion de la carpeta de los archivos y el servicio de Drive
+    POST: Recorre la list de los archivos en drive y los descarga en local.
+    '''
+    for file in lista_archivos_faltantes_local:
+        if file not in archivos_actualizados_local:
+            if len(lista_ruta_archivos) == 0:
+                ruta_descarga = os.path.join(direccion_carpeta, file)
+                tipo_mime = obtenermime(servicio, file)
+                descargar_archivos(file, servicio, ruta_descarga, tipo_mime)
+
+
+def comparar_modificaciones(direccion_carpeta: str, carpeta_id_drive: dict, servicio:any, lista_archivos_alumnos:any)->None:
     '''
     PRE:Recibe la direccion de la carpeta local, el diccionario con las carpetas como clave y los id's como valor
         el servicio de drive y la lista de los archivos dentro de la carpeta del alumno
@@ -180,6 +239,7 @@ def comparar_modificaciones(direccion_carpeta: str, carpeta_id_drive: dict, serv
     sep = direccion_carpeta.split("\\")
     carpeta_del_archivo=sep[-1]
     lista_archivos_local = []
+
     for dir in iterdir:
         ruta = str(dir)
         archivo = ruta.split('\\')
@@ -196,47 +256,17 @@ def comparar_modificaciones(direccion_carpeta: str, carpeta_id_drive: dict, serv
     archivos_actualizados_drive = []
     if len(lista_de_archivos_coincidentes) != 0:
         #Como existe el archivo en ambos lugares se debe comparar la fecha de modificacion
-        for archivo in lista_de_archivos_coincidentes:
-            # como el archivo coincide en ambos lugares debo verificar cual fue modificado mas recientemente
-            modificacion_de_archivo_local = buscar_hora_modificacion(archivo,direccion_carpeta)  # ->datetime
-
-            modificacion_de_archivo_remoto = cambiar_formato_mod_drive(carpeta_del_archivo,archivo, servicio,carpeta_id_drive) # datetime
-
-            if modificacion_de_archivo_local > modificacion_de_archivo_remoto:
-                # significa que esa carpeta en local fue modificada mas recietemente que en remota, por lo tanto esta desactualizada en drive
-                for ruta_archivo in list_ruta_archivos:
-                    ruta_archivo.split('\\')
-                    if ruta_archivo[-1]==archivo:
-                        actualizar_archivo_en_drive(archivo, servicio, ruta_archivo)
-                        archivos_actualizados_drive.append(archivo)
-
-            elif modificacion_de_archivo_local < modificacion_de_archivo_remoto:
-                # significa que esa carpeta en remota fue modificada recientemente que en local, por lo tanto esta desactualizada en local
-                mime=obtenermime(servicio,archivo)
-                descargar_archivos(sep[-1], servicio, list_ruta_archivos,mime)
-                archivos_actualizados_local.append(archivo)
-
+        comparar_fecha_modificacion(lista_de_archivos_coincidentes,list_ruta_archivos,carpeta_del_archivo,carpeta_id_drive,servicio,archivos_actualizados_local,archivos_actualizados_drive)
     if len(lista_de_archivos_faltantes_en_drive) != 0:
         #Como hay archivos que no estan en Drive lo actualizo
-        for file in lista_de_archivos_faltantes_en_drive:
-            if file not in archivos_actualizados_drive:
-                for ruta_archivo in list_ruta_archivos:
-                    lista=ruta_archivo.split("\\")
-                    pathfile= lista[-1]
-                    if pathfile == file:
-                        actualizar_archivo_en_drive(file, servicio, ruta_archivo)
-                        archivos_actualizados_drive.append(file)
+        recorrer_archivos_faltantes_drive(lista_de_archivos_faltantes_en_drive,archivos_actualizados_drive,list_ruta_archivos,servicio)
     if len(lista_de_archivos_faltantes_en_local) != 0:
         #Como hay archivos que no estan en Local los descargo
-        for file in lista_de_archivos_faltantes_en_local:
-            if file not in archivos_actualizados_local:
-                if len(list_ruta_archivos) == 0:
-                    ruta_descarga = os.path.join(direccion_carpeta, file)
-                    tipo_mime=obtenermime(servicio,file)
-                    descargar_archivos(file, servicio, ruta_descarga,tipo_mime)
+        recorrer_archivos_faltantes_local(lista_de_archivos_faltantes_en_local,archivos_actualizados_local,list_ruta_archivos,direccion_carpeta,servicio)
 
 
-def crear_carpeta_drive(carpeta: str, servicio):
+
+def crear_carpeta_drive(carpeta: str, servicio:any)->None:
     '''
     PRE: Recibe el nombre de la carpeta y el servicio de drive
     POST: Crea la carpeta en google drive
@@ -248,7 +278,7 @@ def crear_carpeta_drive(carpeta: str, servicio):
     servicio.files().create(body=file_metadata).execute()
 
 
-def evaluar_carpeta(carpeta_id_drive: dict, carpeta: str, servicio):
+def evaluar_carpeta(carpeta_id_drive: dict, carpeta: str, servicio:any)->None:
     '''
     PRE: Recibe el diccionario "carpeta:id",el nombre de la carpeta y el servicio de drive
     POST:
@@ -284,7 +314,7 @@ def evaluar_carpeta(carpeta_id_drive: dict, carpeta: str, servicio):
             print(f'\ncarpeta "{carpeta}" vacia ')
 
 
-def sincronizacion(carpeta_id_drive: dict, servicio):
+def sincronizacion(carpeta_id_drive: dict, servicio:any)->None:
     '''
     PRE: Recibe el diccionario carpeta:id y el servicio de drive
     POST:

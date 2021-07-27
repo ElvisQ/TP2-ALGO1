@@ -2,7 +2,7 @@ from apiclient import errors
 import os, base64, zipfile, csv
 from auxiliar import RUTA, SERV_DR, SERV_GM
 
-def generar_carpetas_local(lista_asuntos:list,opcion:int):
+def generar_carpetas_local(lista_asuntos:list,opcion:int)->bool:
     '''
     PRE:Recibe la lista de asuntos junto con la opcion elegida por el usuario
     POST: Crea las carpetas de los parciales localmente
@@ -19,7 +19,7 @@ def generar_carpetas_local(lista_asuntos:list,opcion:int):
         print('Error en el nombre de la ruta, Vuelva a seleccionar el mensaje')
         return True
 
-def buscar_asunto():
+def buscar_asunto()->None:
     '''
     Busca los asuntos de los emails
     '''
@@ -39,7 +39,7 @@ def buscar_asunto():
             print(i["value"])
 
 
-def descargar_archivo(servicio, idmsjes:list,opcion:int)->str:
+def descargar_archivo(servicio:any, idmsjes:list,opcion:int)->str:
     '''
     PRE:Recibe el servicio de gmail con una lista de ids de mensajes junto con la opcion elegida por el usuario
     POST:Descarga el archivo y retorna su nombre
@@ -70,7 +70,7 @@ def descargar_archivo(servicio, idmsjes:list,opcion:int)->str:
 
 
 
-def descomprimir_zip(archivo:str):
+def descomprimir_zip(archivo:str)->bool:
     '''
     PRE:Recibe el nombre del archivo a descomprimir
     POST: Descomprime el archivo
@@ -127,7 +127,7 @@ def enlistar_doc_alum()->list:
 
 
 
-def buscar_emails(servicio)->list:
+def buscar_emails(servicio:any)->list:
     '''
     PRE: Recibe el servicio de gmail
     POST: Retorna una lista con los id de los primeros 5 mensajes
@@ -141,7 +141,7 @@ def buscar_emails(servicio)->list:
     return lista_final
 
 
-def adjuntar_emails(servicio, lista_ids:list):
+def adjuntar_emails(servicio:any, lista_ids:list)->list:
     '''
     PRE: Recibe el servicio de gmail y la lista de ids de cadad mensaje
     POST: Retorna una lista con los asuntos de esos mensajes
@@ -157,7 +157,7 @@ def adjuntar_emails(servicio, lista_ids:list):
     return lista_asuntos
 
 
-def seleccionar_email(lista_asuntos:list, servicio):
+def seleccionar_email(lista_asuntos:list, servicio:any)->int:
     '''
     PRE: Recibe una lista de asuntos de mensajes y el servicio de gmail
     POST: Muestra los mensajes y Retorna la opcion elegida por el usuario
@@ -181,7 +181,7 @@ def seleccionar_email(lista_asuntos:list, servicio):
 
 
 
-def anidar_carpetas(lista_asuntos, opcion, lista_csv):
+def anidar_carpetas(lista_asuntos:list, opcion:int, lista_csv:list)->None:
     '''
     PRE: Recibe la lista de asuntos con la opcion que eligio el usuario y la lista con las listas de relacion docente-alumno
     POST: Genera las carpetas anidadas localmente
@@ -198,7 +198,7 @@ def anidar_carpetas(lista_asuntos, opcion, lista_csv):
             os.makedirs(direccion2)
 
 
-def crear_carpetas_drive(servicio_drive, lista_asuntos:list, opciondenombre:int ,listas_csv:list):
+def crear_carpetas_drive(servicio_drive:any, lista_asuntos:list, opciondenombre:int ,listas_csv:list)->None:
     '''
     PRE: Recibe el servicio de gmail la lista de asuntos con la opcion elegida y la listas relacion docente-alumno
     POST: Crea las carpetas anidadas en el Drive
