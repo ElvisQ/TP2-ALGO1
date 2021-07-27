@@ -1,25 +1,7 @@
-import mimetypes
-import os
+import mimetypes, os, time, datetime, io
 from pathlib import Path
-import time
-import service_drive
-import service_gmail
-import datetime
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-import io
-
-RUTA = os.getcwd()
-SERVICIO_GMAIL = service_gmail.obtener_servicio()
-SERVICIO_DRIVE = service_drive.obtener_servicio()
-TIPOS_A_EXPORTAR = {'application/vnd.google-apps.presentation':'application/vnd.oasis.opendocument.presentation',
-                    'application/vnd.google-apps.document':'application/pdf',
-                    'application/vnd.google-apps.drawing':'image/jpeg',
-                    'application/vnd.google-apps.script':'application/vnd.google-apps.script+json',
-                    'application/vnd.google-apps.spreadsheet':'application/pdf',
-                    'application/vnd.google-apps.jam':'application/pdf',
-                    'application/vnd.google-apps.form':'application/pdf',
-                    'application/vnd.google-apps.site':'text/plain'
-}
+from auxiliar import RUTA, SERV_DR, SERV_GM, EXPORT
 
 def enlistar_carpetas_drive(servicio_drive) -> dict:
     '''
@@ -150,8 +132,8 @@ def descargar_archivos(nombre_de_archivo:str, servicio, ruta_archivo,tipo_archiv
     POST:Descarga el archivo de drive a la ruta especificada
     '''
     id = buscar_id_archivo(nombre_de_archivo, servicio)
-    if tipo_archivo in TIPOS_A_EXPORTAR:
-        tipo_exportado = TIPOS_A_EXPORTAR[tipo_archivo]
+    if tipo_archivo in EXPORT:
+        tipo_exportado = EXPORT[tipo_archivo]
         resultado = servicio.files().export_media(fileId=id, mimeType=tipo_exportado)
     else:
         resultado = servicio.files().get_media(fileId=id)
@@ -321,6 +303,6 @@ def sincronizacion(carpeta_id_drive: dict, servicio):
 
 
 def main_sinc() -> None:
-    carpeta_id = enlistar_carpetas_drive(SERVICIO_DRIVE)
+    carpeta_id = enlistar_carpetas_drive(SERV_DR)
 
-    sincronizacion(carpeta_id, SERVICIO_DRIVE)
+    sincronizacion(carpeta_id, SERV_DR)
