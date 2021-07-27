@@ -1,28 +1,17 @@
-import service_drive, io, os
+ import io, os
 from googleapiclient.http import MediaIoBaseDownload
-
-RUTA_TRABAJO = os.getcwd()
-SERVICIO = service_drive.obtener_servicio()
-TIPOS_A_EXPORTAR = {'application/vnd.google-apps.presentation':'application/vnd.oasis.opendocument.presentation',
-                    'application/vnd.google-apps.document':'application/pdf',
-                    'application/vnd.google-apps.drawing':'image/jpeg',
-                    'application/vnd.google-apps.script':'application/vnd.google-apps.script+json',
-                    'application/vnd.google-apps.spreadsheet':'application/pdf',
-                    'application/vnd.google-apps.drawing':'image/jpeg',
-                    'application/vnd.google-apps.jam':'application/pdf',
-                    'application/vnd.google-apps.form':'application/pdf',
-                    'application/vnd.google-apps.site':'text/plain'
-}
+from auxiliar import RUTA, SERV_DR, EXPORT
 
 def descargar(nombre_archivo: str, id_archivo: str, tipo_archivo: str) -> None:
     '''
-    Descarga el archivo solicitado por el usuario
+    PRE: Recibe el nombre, id, y tipo del archivo elegido por el usuario.
+    POST: Descarga el archivo solicitado.
     '''
-    if tipo_archivo in TIPOS_A_EXPORTAR:
-        tipo_exportado = TIPOS_A_EXPORTAR[tipo_archivo]
-        request = SERVICIO.files().export_media(fileId=id_archivo,mimeType=tipo_exportado)
+    if tipo_archivo in EXPORT:
+        tipo_exportado = EXPORT[tipo_archivo]
+        request = SERV_DR.files().export_media(fileId=id_archivo,mimeType=tipo_exportado)
     else:
-        request = SERVICIO.files().get_media(fileId=id_archivo)
+        request = SERV_DR.files().get_media(fileId=id_archivo)
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
     done = False
@@ -30,22 +19,23 @@ def descargar(nombre_archivo: str, id_archivo: str, tipo_archivo: str) -> None:
         status, done = downloader.next_chunk()
         print("Download %d%%." % int(status.progress() * 100))
     fh.seek(0)
-    with open(os.path.join(RUTA_TRABAJO,nombre_archivo), 'wb') as f:
+    with open(os.path.join(RUTA,nombre_archivo), 'wb') as f:
         f.write(fh.read())
         f.close()
     print("Se ha descargado {0}".format(nombre_archivo))
 
 def verificar_existencia(nombre: str) -> tuple:
     '''
-    Verifica que el nombre de archivo ingresado exista en el Drive del usuario. Si existe, llama a la función 'descargar'.
+    PRE: Recibe el nombre de un archivo.
+    POST: Verifica que el nombre de archivo ingresado exista en el Drive del usuario. Si existe, llama a la función 'descargar'.
     '''
     datos_archivos = (1,1,1) #si datos queda (1,1,1) es porque no existe el archivo ingresado.
     print("Verificando coincidencias, puede demorar...")
-    archivos_coincidentes = SERVICIO.files().list(fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)').execute()
+    archivos_coincidentes = SERV_DR.files().list(fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)').execute()
     lista_archivos = archivos_coincidentes.get('files')
     nextPageToken = archivos_coincidentes.get('nextPageToken')
     while nextPageToken:
-        archivos_coincidentes = SERVICIO.files().list(fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)',pageToken=nextPageToken).execute()
+        archivos_coincidentes = SERV_DR.files().list(fields='nextPageToken, files(id, name, mimeType, modifiedTime, parents)',pageToken=nextPageToken).execute()
         lista_archivos.extend(archivos_coincidentes.get('files'))
         nextPageToken = archivos_coincidentes.get('nextPageToken')
     for i in range(len(lista_archivos)):
@@ -55,7 +45,7 @@ def verificar_existencia(nombre: str) -> tuple:
 
 def input_archivo() -> tuple:
     '''
-    Pide al usuario ingresar un nombre de archivo. Si el usuario ingresa ENTER o una cadena de espacios, vuelve al menú. Caso contrario el programa procede a verificar la existencia del archivo.
+    POST: Pide al usuario ingresar un nombre de archivo. Si el usuario ingresa ENTER o una cadena de espacios, vuelve al menú. Caso contrario el programa procede a verificar la existencia del archivo.
     '''
     datos_archivos = (0,0,0) #si datos queda (0,0,0) se vuelve al menú.
     condicion_salida = True
