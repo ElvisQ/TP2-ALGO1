@@ -1,18 +1,6 @@
-
 from apiclient import errors
-import os
-
-import service_drive
-import service_gmail
-
-import base64
-import zipfile
-import csv
-
-RUTA=os.getcwd()
-
-SERVICIO_GMAIL = service_gmail.obtener_servicio()
-SERVICIO_DRIVE = service_drive.obtener_servicio()
+import os, base64, zipfile, csv
+from auxiliar import RUTA, SERV_DR, SERV_GM
 
 def generar_carpetas_local(lista_asuntos:list,opcion:int):
     '''
@@ -31,19 +19,15 @@ def generar_carpetas_local(lista_asuntos:list,opcion:int):
         print('Error en el nombre de la ruta, Vuelva a seleccionar el mensaje')
         return True
 
-
-
-
 def buscar_asunto():
     '''
     Busca los asuntos de los emails
     '''
-    servicio= service_gmail.obtener_servicio()
-    resultados = servicio.users().messages().list(userId='me', labelIds=['INBOX']).execute()
+    resultados = SERV_GM.users().messages().list(userId='me', labelIds=['INBOX']).execute()
     mensajes= resultados.get('messages',[])
 
     for mensaje in mensajes:
-        msg=servicio.users().messages().get(userId='me', id= mensaje['id']).execute()
+        msg=SERV_GM.users().messages().get(userId='me', id= mensaje['id']).execute()
 
 
     headers = msg["payload"]["headers"]
@@ -265,16 +249,16 @@ def main_carpetas()->None:
     error= False
 
     while not error:
-        lista_idmsjes = buscar_emails(SERVICIO_GMAIL) #busca los ultimos 5 mensajes
+        lista_idmsjes = buscar_emails(SERV_GM) #busca los ultimos 5 mensajes
 
-        lista_asuntos = adjuntar_emails(SERVICIO_GMAIL, lista_idmsjes) #adjunta los ultimos 5 mensajes por Asunto en una lista
+        lista_asuntos = adjuntar_emails(SERV_GM, lista_idmsjes) #adjunta los ultimos 5 mensajes por Asunto en una lista
 
-        opcion = seleccionar_email(lista_asuntos, SERVICIO_GMAIL) #el usuario elije cual mensaje
+        opcion = seleccionar_email(lista_asuntos, SERV_GM) #el usuario elije cual mensaje
 
         rompio =generar_carpetas_local(lista_asuntos,opcion) #genera las carpetas localmente con el asunto del mail elegido
         if rompio==False:
 
-            nombre_archivo= descargar_archivo(SERVICIO_GMAIL, lista_idmsjes, opcion) #descarga el archivo adjunto
+            nombre_archivo= descargar_archivo(SERV_GM, lista_idmsjes, opcion) #descarga el archivo adjunto
 
             descomprimir=descomprimir_zip(nombre_archivo) #descomprime el archivo .zip
             if descomprimir==True:
@@ -282,6 +266,7 @@ def main_carpetas()->None:
 
                 anidar_carpetas(lista_asuntos,opcion,listas_csv) #anida las carpetas localmente
 
-                crear_carpetas_drive(SERVICIO_DRIVE, lista_asuntos, opcion, listas_csv) #crea y anida las carpetas en el drive
+                crear_carpetas_drive(SERV_DR, lista_asuntos, opcion, listas_csv) #crea y anida las carpetas en el drive
 
                 error= True
+
