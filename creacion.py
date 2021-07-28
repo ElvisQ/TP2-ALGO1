@@ -1,10 +1,10 @@
 import os, subida
 from auxiliar import SERV_DR
 
-
 def validar_existencia(nombre_archivo:str)->str:
     """
-    Verifica que no exista un archivo con el mismo nombre, en caso de que exista, 
+    Pre: Toma el nombre del archivo.
+    Post: Verifica que no exista un archivo con el mismo nombre, en caso de que exista, 
     devolverá el nuevo nombre del archivo.
     """
     while (os.path.isfile(nombre_archivo)) == True:
@@ -14,11 +14,12 @@ def validar_existencia(nombre_archivo:str)->str:
 
 def parametros_archivo()-> tuple:
     """
-    Le pide al usuario los datos necesarios para crear el archivo
+    Pre: ----
+    Post: Le pide al usuario los datos necesarios para crear el archivo y los devuele.
     """
     archivo = []
 
-    mimetype = subida.tipos_archivos()
+    mimetype = subir_archivo.tipos_archivos()
 
     nombre_archivo = input("Ingrese el nombre del archivo incluyendo la extension '.': ")
 
@@ -36,8 +37,12 @@ def parametros_archivo()-> tuple:
     id_carpeta = input("Ingrese el ID de su carpeta: ")
     return archivo, id_carpeta, mimetype
 
-#main del programa
+
 def crear()-> None:
+    """
+    Pre: ---
+    Post: Crea el archivo en remoto y llama a la funcion de subir archivo para que sea subido a Drive.
+    """
     nombre_archivo, id_carpeta, mimetype = parametros_archivo()
 
     archivo = nombre_archivo[0]
